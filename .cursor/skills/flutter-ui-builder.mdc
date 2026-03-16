@@ -1,0 +1,217 @@
+---
+description: Build Flutter UI components and screens following project theming, widget structure, and architecture conventions. Use when creating any widget, screen, or UI element.
+globs:
+alwaysApply: false
+---
+
+# Flutter UI Builder
+
+## What This Skill Does
+Generates correctly structured Flutter UI code that follows project
+conventions — theming, widget decomposition, state handling, and
+performance patterns.
+
+## Widget Structure Rules
+
+### Always private widget classes, never helper methods
+```dart
+// Correct — private class
+class _TaskCard extends StatelessWidget {
+  const _TaskCard({required this.task});
+  final Task task;
+
+  @override
+  Widget build(BuildContext context) => ...;
+}
+
+// Wrong — private method returning Widget
+Widget _buildTaskCard(Task task) => ...;
+```
+
+### Break large build() methods into private classes
+Any `build()` method over 40 lines should be broken into named private
+widget classes. Each class should have a single, clear visual responsibility.
+
+### Use const wherever possible
+```dart
+// Correct
+const SizedBox(height: 16),
+const Divider(),
+const Text('Hello'),
+
+// Wrong — missing const
+SizedBox(height: 16),
+```
+
+## Theming — Never Hardcode Colors or Text Styles
+
+```dart
+// Correct
+color: Theme.of(context).colorScheme.primary,
+color: Theme.of(context).colorScheme.surface,
+color: Theme.of(context).colorScheme.onSurface,
+style: Theme.of(context).textTheme.titleMedium,
+style: Theme.of(context).textTheme.bodySmall,
+
+// Wrong
+color: Colors.blue,
+color: const Color(0xFF1976D2),
+style: const TextStyle(fontSize: 14),
+```
+
+## Color Scheme Reference
+
+| Token | Use for |
+|---|---|
+| `colorScheme.primary` | Primary actions, active states |
+| `colorScheme.onPrimary` | Text/icons on primary color |
+| `colorScheme.surface` | Card and container backgrounds |
+| `colorScheme.onSurface` | Primary text on surface |
+| `colorScheme.surfaceVariant` | Subtle container backgrounds |
+| `colorScheme.outline` | Borders, dividers |
+| `colorScheme.error` | Error states only |
+| `colorScheme.tertiary` | Accent highlights (streaks, points) |
+
+## Common Widget Patterns
+
+### Screen scaffold
+```dart
+class TaskCreateScreen extends ConsumerWidget {
+  const TaskCreateScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(taskCreateControllerProvider, (_, state) {
+      if (state.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error.toUserMessage())),
+        );
+      }
+      if (!state.isLoading && !state.hasError) context.pop();
+    });
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('New Task')),
+      body: const SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: _TaskCreateForm(),
+        ),
+      ),
+    );
+  }
+}
+```
+
+### AsyncValue rendering — always all three states
+```dart
+ref.watch(tasksForDateProvider).when(
+  data:    (tasks) => _TaskList(tasks: tasks),
+  loading: () => const _TaskListSkeleton(),
+  error:   (e, _) => _ErrorCard(message: e.toUserMessage()),
+);
+```
+
+### List — always builder, never Column + map
+```dart
+// Correct — lazy loaded
+ListView.builder(
+  itemCount: tasks.length,
+  itemBuilder: (context, index) => _TaskCard(task: tasks[index]),
+)
+
+// Wrong — builds all at once
+Column(
+  children: tasks.map((t) => _TaskCard(task: t)).toList(),
+)
+```
+
+### Empty state
+```dart
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          Icons.inbox_outlined,
+          size: 48,
+          color: Theme.of(context).colorScheme.outline,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          message,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.outline,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+### Loading skeleton
+```dart
+class _TaskListSkeleton extends StatelessWidget {
+  const _TaskListSkeleton();
+
+  @override
+  Widget build(BuildContext context) => ListView.builder(
+    itemCount: 5,
+    padding: const EdgeInsets.all(16),
+    itemBuilder: (_, __) => const _TaskCardSkeleton(),
+  );
+}
+
+class _TaskCardSkeleton extends StatelessWidget {
+  const _TaskCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    height: 72,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+    ),
+  );
+}
+```
+
+## Spacing — Use Consistent Values
+
+Always use multiples of 4:
+```dart
+// Standard spacing values
+const double s4  = 4;
+const double s8  = 8;
+const double s12 = 12;
+const double s16 = 16;
+const double s24 = 24;
+const double s32 = 32;
+
+// Usage
+const SizedBox(height: 16),
+const EdgeInsets.all(16),
+const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+```
+
+## Performance Rules
+- Always `const` on widgets with no dynamic data.
+- Always `ListView.builder` for lists — never `Column` with `.map()`.
+- Use `select()` on providers to avoid unnecessary rebuilds.
+- Never do computation inside `build()` — move to controller or domain extension.
+
+## Rules
+- Never hardcode colors — always `Theme.of(context).colorScheme`.
+- Never hardcode text styles — always `Theme.of(context).textTheme`.
+- Always use private widget classes, never private widget methods.
+- Always handle loading and error states — never assume data is available.
+- Always use `SafeArea` on root screen widgets.
+- Always use `ListView.builder` for any list of variable length.
+- Always pass explicit keys to list item widgets when items can reorder.

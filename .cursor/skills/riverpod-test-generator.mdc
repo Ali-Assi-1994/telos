@@ -1,0 +1,265 @@
+---
+description: Generate tests for Riverpod controllers, repositories, and widgets. Use when writing any test that involves providers, fake repositories, or ProviderScope overrides.
+globs:
+alwaysApply: false
+---
+
+# Riverpod Test Generator
+
+## What This Skill Does
+Generates correctly structured tests for each layer of the architecture.
+Picks the right tool, pattern, and fake/mock strategy per layer.
+
+## Test File Location
+Test files mirror the feature structure exactly:
+```
+lib/src/features/tasks/data/supabase_task_repository.dart
+→ test/features/tasks/data/supabase_task_repository_test.dart
+
+lib/src/features/tasks/presentation/task_create_controller.dart
+→ test/features/tasks/presentation/task_create_controller_test.dart
+```
+
+## Layer 1 — Repository Tests (Unit)
+
+Use a `FakeRepository` that implements the abstract interface with
+in-memory state. Never mock Supabase directly.
+
+```dart
+// test/features/tasks/data/fake_task_repository.dart
+class FakeTaskRepository implements TaskRepository {
+  final _tasks = <Task>[];
+  var _shouldThrow = false;
+
+  void setShouldThrow(bool value) => _shouldThrow = value;
+
+  @override
+  Future<List<Task>> getTasksForDate(String userId, DateTime date) async {
+    if (_shouldThrow) throw AppException.database('Test error');
+    return _tasks
+        .where((t) => t.userId == userId && t.assignedDate == date)
+        .toList();
+  }
+
+  @override
+  Future<Task> createTask(Task task) async {
+    if (_shouldThrow) throw AppException.database('Test error');
+    _tasks.add(task);
+    return task;
+  }
+
+  @override
+  Future<CompleteTaskResult> completeTask(
+    String taskId,
+    String userId,
+  ) async {
+    final i = _tasks.indexWhere((t) => t.id == taskId);
+    if (i == -1) {
+      return const CompleteTaskResult.failure(error: 'Not found');
+    }
+    _tasks[i] = _tasks[i].copyWith(isCompleted: true);
+    return CompleteTaskResult.success(points: _tasks[i].points);
+  }
+}
+```
+
+## Layer 2 — Controller Tests (Unit)
+
+Use `ProviderContainer` with repository override. No Flutter widgets needed.
+
+```dart
+// test/features/tasks/presentation/task_create_controller_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+void main() {
+  late FakeTaskRepository fakeRepo;
+  late ProviderContainer container;
+
+  setUp(() {
+    fakeRepo = FakeTaskRepository();
+    container = ProviderContainer(
+      overrides: [
+        taskRepositoryProvider.overrideWithValue(fakeRepo),
+      ],
+    );
+  });
+
+  tearDown(() => container.dispose());
+
+  group('TaskCreateController', () {
+    test('createTask succeeds and invalidates tasksForDateProvider', () async {
+      // Arrange
+      final task = Task(
+        id: '1',
+        userId: 'user-1',
+        title: 'Test task',
+        assignedDate: DateTime.now(),
+        categoryId: 1,
+        points: 5,
+      );
+
+      final controller = container.read(
+        taskCreateControllerProvider.notifier,
+      );
+
+      // Act
+      await controller.createTask(task);
+
+      // Assert
+      expect(
+        container.read(taskCreateControllerProvider),
+        const AsyncData<void>(null),
+      );
+      expect(fakeRepo.tasks, contains(task));
+    });
+
+    test('createTask exposes error state on failure', () async {
+      // Arrange
+      fakeRepo.setShouldThrow(true);
+      final controller = container.read(
+        taskCreateControllerProvider.notifier,
+      );
+
+      // Act
+      await controller.createTask(fakeTask);
+
+      // Assert
+      expect(
+        container.read(taskCreateControllerProvider),
+        isA<AsyncError>(),
+      );
+    });
+  });
+}
+```
+
+## Layer 3 — Widget Tests
+
+Use `ProviderScope` with overrides. Never mock providers directly.
+
+```dart
+// test/features/tasks/presentation/task_card_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+void main() {
+  testWidgets('TaskCard shows completed checkmark when task is done',
+      (tester) async {
+    // Arrange
+    final completedTask = Task(
+      id: '1',
+      userId: 'user-1',
+      title: 'Buy groceries',
+      assignedDate: DateTime.now(),
+      categoryId: 1,
+      points: 5,
+      isCompleted: true,
+    );
+
+    // Act
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tasksForDateProvider.overrideWith(
+            (_) async => [completedTask],
+          ),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(find.text('Buy groceries'), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+  });
+
+  testWidgets('TaskCard shows loading skeleton while fetching',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tasksForDateProvider.overrideWith(
+            (_) async {
+              await Future<void>.delayed(const Duration(seconds: 1));
+              return [];
+            },
+          ),
+        ],
+        child: const MaterialApp(home: HomeScreen()),
+      ),
+    );
+
+    // Before settling — loading state
+    expect(find.byType(TaskListSkeleton), findsOneWidget);
+  });
+}
+```
+
+## Layer 4 — Integration Tests
+
+Test full user flows end to end.
+
+```dart
+// test/features/tasks/integration/task_create_flow_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('User creates a task and sees it in the list', (tester) async {
+    // Arrange: pump the full app
+    await tester.pumpWidget(const ProviderScope(child: App()));
+    await tester.pumpAndSettle();
+
+    // Act: navigate to create screen
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    // Fill form
+    await tester.enterText(find.byKey(const Key('task_title')), 'New task');
+    await tester.tap(find.byKey(const Key('category_fitness')));
+    await tester.tap(find.byKey(const Key('submit_button')));
+    await tester.pumpAndSettle();
+
+    // Assert: back on home, task visible
+    expect(find.text('New task'), findsOneWidget);
+  });
+}
+```
+
+## Test Data Helpers
+
+Keep shared test fixtures in `test/helpers/`:
+
+```dart
+// test/helpers/task_fixtures.dart
+Task makeTask({
+  String id = '1',
+  String userId = 'user-1',
+  String title = 'Test task',
+  int points = 5,
+  bool isCompleted = false,
+}) =>
+    Task(
+      id: id,
+      userId: userId,
+      title: title,
+      assignedDate: DateTime.now(),
+      categoryId: 1,
+      points: points,
+      isCompleted: isCompleted,
+    );
+```
+
+## Rules
+- Arrange-Act-Assert structure in every test.
+- Use `FakeRepository` over `mocktail` wherever the fake is straightforward.
+- Never mock Riverpod providers directly — always use `ProviderScope` overrides.
+- Always call `container.dispose()` in `tearDown`.
+- Always `await tester.pumpAndSettle()` after async actions in widget tests.
+- Test both the happy path and the error path for every controller method.
+- Keep test fixtures in `test/helpers/` — never inline complex test data.
