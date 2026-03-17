@@ -1,0 +1,26 @@
+# Flutter & Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+build/
+
+# IntelliJ / VSCode / Xcode
+.idea/
+.idea/markdown.xml
+.vscode/
+*.iml
+ios/Pods/
+macos/Pods/
+
+# Generated code
+**/*.g.dart
+**/*.freezed.dart
+
+# Environment / secrets
+.env*
+
+# Logs
+*.log
+
