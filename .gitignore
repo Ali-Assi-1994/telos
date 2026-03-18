@@ -18,8 +18,13 @@ macos/Pods/
 **/*.g.dart
 **/*.freezed.dart
 
-# Environment / secrets
-.env*
+# Environment / secrets (do not commit real keys)
+.env
+.env.dev
+.env.staging
+.env.prod
+.env.local
+!.env.example
 
 # Logs
 *.log
