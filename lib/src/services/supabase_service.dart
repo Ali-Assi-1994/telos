@@ -11,4 +11,3 @@ part 'supabase_service.g.dart';
 SupabaseClient supabaseClient(SupabaseClientRef ref) {
   return Supabase.instance.client;
 }
-

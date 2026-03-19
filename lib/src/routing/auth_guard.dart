@@ -19,15 +19,15 @@ String? authGuardRedirect({
   );
 
   final isOnAuthPath = state.matchedLocation.startsWith('/auth');
+  final isOnSplash = state.matchedLocation == '/';
 
   if (!isAuthenticated && !isOnAuthPath) {
     return '/auth/login';
   }
 
-  if (isAuthenticated && isOnAuthPath) {
+  if (isAuthenticated && (isOnAuthPath || isOnSplash)) {
     return '/home';
   }
 
   return null;
 }
-

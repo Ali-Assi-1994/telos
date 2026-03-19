@@ -12,9 +12,16 @@ sealed class AppException implements Exception {
   String toUserMessage() => message;
 }
 
+/// Auth-related errors (login, signup, session).
+class AuthAppException extends AppException {
+  const AuthAppException(super.message, {Object? cause});
+
+  @override
+  String toUserMessage() => message;
+}
+
 /// Generic unknown error, used as a fallback.
 class UnknownAppException extends AppException {
   const UnknownAppException({Object? cause})
       : super('Something went wrong. Please try again.', cause: cause);
 }
-

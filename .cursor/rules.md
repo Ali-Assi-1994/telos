@@ -670,3 +670,23 @@ expect(find.byIcon(Icons.check_circle), findsOneWidget);
 - Never duplicate in Dart a data integrity rule that already exists in Postgres.
 - Never watch an entire provider when only one field is needed — use
   `ref.watch(provider.select(...))`.
+
+### Logos & Icon Assets
+
+- Never use `CustomPainter` to draw logos, brand icons, or product icons unless explicitly asked to do so.
+- Logos and brand icons must come from image or SVG assets, or from standard `Icon` data where appropriate.
+- When design-specific logo/icon assets cannot be fetched programmatically, ask the user to provide the asset files (SVG/PNG) and wire them in as Flutter assets.
+
+---
+
+## UI Composition & Analysis Rules
+
+- **Split large widgets into smaller components**
+  - Any screen widget that grows beyond ~150–200 lines must be refactored into private widgets (e.g. `_Header`, `_FormSection`, `_Footer`) rather than one giant `build` method.
+  - Prefer small, focused `StatelessWidget`/`ConsumerWidget` components over helper methods for complex sections of UI.
+  - Keep layout readable: break Banani/figma-style screens into logical sections (header, body, footer, etc.).
+
+- **Always run `dart analyze` and fix issues after changes**
+  - After any non-trivial code change, run `dart analyze` and fix all errors and reasonable lints before considering the work done.
+  - Treat analyzer warnings like TODOs: either fix them or consciously document why they are being suppressed.
+  - Do not leave unused fields, imports, or obvious `const` hints unresolved in committed code.

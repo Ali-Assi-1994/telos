@@ -24,4 +24,3 @@ final class AppRoutes {
   // Leaderboard
   static const String leaderboard = '/leaderboard';
 }
-

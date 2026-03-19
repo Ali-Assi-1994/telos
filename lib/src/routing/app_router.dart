@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../features/auth/presentation/auth_state_provider.dart';
+import '../features/auth/presentation/login_screen.dart';
+import '../features/auth/presentation/register_screen.dart';
+import '../features/home/presentation/home_screen.dart';
 import '../utils/logger.dart';
 import 'app_routes.dart';
 import 'auth_guard.dart';
@@ -11,9 +15,8 @@ part 'app_router.g.dart';
 /// Top-level router configuration for the app.
 @Riverpod(keepAlive: true)
 GoRouter appRouter(AppRouterRef ref) {
-  // TODO: Replace this placeholder with a real auth state provider once
-  // the auth feature is implemented.
-  const bool isAuthenticated = false;
+  final authState = ref.watch(authStateProvider);
+  final isAuthenticated = authState.valueOrNull != null;
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
@@ -34,7 +37,21 @@ GoRouter appRouter(AppRouterRef ref) {
         name: 'splash',
         builder: (context, state) => const _SplashScreen(),
       ),
-      // Additional feature routes will be added here.
+      GoRoute(
+        path: AppRoutes.login,
+        name: 'login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        name: 'register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        name: 'home',
+        builder: (context, state) => const HomeScreen(),
+      ),
     ],
   );
 }
@@ -51,4 +68,3 @@ class _SplashScreen extends StatelessWidget {
     );
   }
 }
-
