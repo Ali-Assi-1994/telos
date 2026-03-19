@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:telos/src/constants/app_colors.dart';
 import 'package:telos/src/routing/app_router.dart';
 
 class App extends ConsumerWidget {
@@ -14,12 +15,12 @@ class App extends ConsumerWidget {
       title: 'Telos',
       themeMode: ThemeMode.system,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4F46E5)),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.brandSeed),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4F46E5),
+          seedColor: AppColors.brandSeed,
           brightness: Brightness.dark,
         ),
         useMaterial3: true,
@@ -28,3 +29,4 @@ class App extends ConsumerWidget {
     );
   }
 }
+

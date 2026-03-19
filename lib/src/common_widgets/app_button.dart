@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Primary filled button matching the Banani Calm Day Planner login design.
+import 'package:telos/src/constants/app_colors.dart';
+
+/// Primary filled button matching the Banani Calm Day Planner auth design.
 class AppPrimaryButton extends StatelessWidget {
   const AppPrimaryButton({
     super.key,
@@ -15,14 +17,11 @@ class AppPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF16A085);
-    const foregroundColor = Color(0xFFFFFFFF);
-
     return FilledButton(
       onPressed: isLoading ? null : onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: foregroundColor,
+        backgroundColor: AppColors.calmPrimary,
+        foregroundColor: AppColors.calmPrimaryForeground,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -62,12 +61,10 @@ class AppOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const foregroundColor = Color(0xFF0F1722);
-
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: foregroundColor,
+        foregroundColor: AppColors.calmForeground,
         side: const BorderSide(color: Color(0xFFE5E7EB)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         shape: RoundedRectangleBorder(

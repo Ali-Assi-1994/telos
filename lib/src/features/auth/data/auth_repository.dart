@@ -11,6 +11,16 @@ abstract class AuthRepository {
   /// Current session if signed in.
   Session? get currentSession;
 
+  /// Signs up a new user with email and password.
+  ///
+  /// Optionally stores [fullName] as user metadata.
+  /// Throws [AuthAppException] on failure.
+  Future<void> signUpWithPassword({
+    required String fullName,
+    required String email,
+    required String password,
+  });
+
   /// Signs in with email and password.
   /// Throws [AuthAppException] on invalid credentials or network error.
   Future<void> signInWithPassword({

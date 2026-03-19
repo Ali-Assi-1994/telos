@@ -38,6 +38,27 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> signUpWithPassword({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'full_name': fullName,
+        },
+      );
+      AppLogger.auth.info('Sign-up success: ${email.trim().toLowerCase()}');
+    } on AuthException catch (e, st) {
+      AppLogger.auth.error('Sign-up failed', error: e, stackTrace: st);
+      throw AuthAppException(_mapSignUpError(e.message), cause: e);
+    }
+  }
+
+  @override
   Future<void> signInWithGoogle() => _signInWithOAuth(OAuthProvider.google);
 
   @override
@@ -77,6 +98,21 @@ class SupabaseAuthRepository implements AuthRepository {
       return 'Connection problem. Check your network and try again.';
     }
     return 'Sign-in failed. Please try again.';
+  }
+
+  String _mapSignUpError(String message) {
+    final lower = message.toLowerCase();
+    if (lower.contains('user already registered') ||
+        lower.contains('already exists')) {
+      return 'An account with this email already exists.';
+    }
+    if (lower.contains('password')) {
+      return 'Please choose a stronger password and try again.';
+    }
+    if (lower.contains('network') || lower.contains('connection')) {
+      return 'Connection problem. Check your network and try again.';
+    }
+    return 'Sign-up failed. Please try again.';
   }
 }
 

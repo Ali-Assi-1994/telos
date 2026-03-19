@@ -2,12 +2,27 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 
-part 'sign_in_controller.g.dart';
+part 'auth_controller.g.dart';
 
 @riverpod
-class SignInController extends _$SignInController {
+class AuthController extends _$AuthController {
   @override
   FutureOr<void> build() {}
+
+  Future<void> signUp({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).signUpWithPassword(
+            fullName: fullName.trim(),
+            email: email.trim().toLowerCase(),
+            password: password,
+          ),
+    );
+  }
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncLoading();
@@ -33,3 +48,4 @@ class SignInController extends _$SignInController {
     );
   }
 }
+

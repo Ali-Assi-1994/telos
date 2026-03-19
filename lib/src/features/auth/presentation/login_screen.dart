@@ -5,9 +5,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:telos/src/common_widgets/app_button.dart';
 import 'package:telos/src/common_widgets/app_text_field.dart';
+import 'package:telos/src/constants/app_colors.dart';
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/routing/app_routes.dart';
-import 'package:telos/src/features/auth/presentation/sign_in_controller.dart';
+import 'package:telos/src/features/auth/presentation/auth_controller.dart';
 
 /// Login screen matching Banani "Calm Day Planner" design (Calm Mint theme).
 /// Email/password only; encouraging copy per business rules.
@@ -33,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleAuthError() async {
     if (!mounted) return;
-    final state = ref.read(signInControllerProvider);
+    final state = ref.read(authControllerProvider);
     if (state.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -46,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(signInControllerProvider.notifier).signIn(
+    await ref.read(authControllerProvider.notifier).signIn(
           email: _emailController.text,
           password: _passwordController.text,
         );
@@ -55,19 +56,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() async {
-    await ref.read(signInControllerProvider.notifier).signInWithGoogle();
+    await ref.read(authControllerProvider.notifier).signInWithGoogle();
     await _handleAuthError();
   }
 
   Future<void> _signInWithApple() async {
-    await ref.read(signInControllerProvider.notifier).signInWithApple();
+    await ref.read(authControllerProvider.notifier).signInWithApple();
     await _handleAuthError();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _CalmMint.background,
+      backgroundColor: AppColors.calmBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -132,7 +133,7 @@ class _Logo extends StatelessWidget {
       width: 64,
       height: 64,
       decoration: BoxDecoration(
-        color: _CalmMint.primary,
+        color: AppColors.calmPrimary,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
@@ -141,7 +142,7 @@ class _Logo extends StatelessWidget {
           width: 32,
           height: 32,
           colorFilter: const ColorFilter.mode(
-            _CalmMint.primaryForeground,
+            AppColors.calmPrimaryForeground,
             BlendMode.srcIn,
           ),
         ),
@@ -160,7 +161,7 @@ class _Title extends StatelessWidget {
       style: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.w600,
-        color: _CalmMint.foreground,
+        color: AppColors.calmForeground,
       ),
     );
   }
@@ -176,7 +177,7 @@ class _Subtitle extends StatelessWidget {
       style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w500,
-        color: _CalmMint.mutedForeground,
+        color: AppColors.calmMutedForeground,
       ),
     );
   }
@@ -195,7 +196,7 @@ class _Footer extends StatelessWidget {
           TextSpan(
             style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w500,
-              color: _CalmMint.mutedForeground,
+              color: AppColors.calmMutedForeground,
             ),
             children: [
               const TextSpan(text: "Don't have an account? "),
@@ -208,7 +209,7 @@ class _Footer extends StatelessWidget {
                     'Sign up',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: _CalmMint.primary,
+                      color: AppColors.calmPrimary,
                     ),
                   ),
                 ),
@@ -244,7 +245,7 @@ class _LoginForm extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(signInControllerProvider);
+    final state = ref.watch(authControllerProvider);
 
     return Form(
       key: formKey,
@@ -298,7 +299,7 @@ class _LoginForm extends ConsumerWidget {
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
                 size: 20,
-                color: _CalmMint.mutedForeground,
+                color: AppColors.calmMutedForeground,
               ),
               onPressed: onToggleObscurePassword,
             ),
@@ -338,7 +339,7 @@ class _SocialDivider extends StatelessWidget {
           child: Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: _CalmMint.mutedForeground,
+              color: AppColors.calmMutedForeground,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -375,7 +376,7 @@ class _SocialButton extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: _CalmMint.foreground,
+            color: AppColors.calmForeground,
           ),
           const SizedBox(width: 12),
           Text(
@@ -439,19 +440,10 @@ class _ForgotPasswordLink extends StatelessWidget {
           'Forgot password?',
           style: theme.textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w500,
-            color: _CalmMint.mutedForeground,
+            color: AppColors.calmMutedForeground,
           ),
         ),
       ),
     );
   }
-}
-
-/// Calm Mint theme tokens from Banani "Calm Day Planner" login design.
-abstract final class _CalmMint {
-  static const Color background = Color(0xFFF6FBF9);
-  static const Color foreground = Color(0xFF0F1722);
-  static const Color primary = Color(0xFF16A085);
-  static const Color primaryForeground = Color(0xFFFFFFFF);
-  static const Color mutedForeground = Color(0xFF6B7280);
 }
