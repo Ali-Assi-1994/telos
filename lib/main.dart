@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'app.dart';
+import 'package:telos/app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

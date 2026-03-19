@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 
-import '../utils/logger.dart';
+import 'package:telos/src/utils/logger.dart';
 
 /// Encapsulates authentication-based redirect logic for the router.
 ///

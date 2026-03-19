@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../routing/app_routes.dart';
-import '../../auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/routing/app_routes.dart';
 
 /// Placeholder home screen after login. Tasks list will be added here.
 class HomeScreen extends ConsumerWidget {

@@ -1,10 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../exceptions/app_exception.dart';
-import '../../../services/supabase_service.dart';
-import '../../../utils/logger.dart';
-import 'auth_repository.dart';
+import 'package:telos/src/exceptions/app_exception.dart';
+import 'package:telos/src/services/supabase_service.dart';
+import 'package:telos/src/utils/logger.dart';
+import 'package:telos/src/features/auth/data/auth_repository.dart';
 
 part 'supabase_auth_repository.g.dart';
 

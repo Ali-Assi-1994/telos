@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../features/auth/presentation/auth_state_provider.dart';
-import '../features/auth/presentation/login_screen.dart';
-import '../features/auth/presentation/register_screen.dart';
-import '../features/home/presentation/home_screen.dart';
-import '../utils/logger.dart';
-import 'app_routes.dart';
-import 'auth_guard.dart';
+import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
+import 'package:telos/src/features/auth/presentation/login_screen.dart';
+import 'package:telos/src/features/auth/presentation/register_screen.dart';
+import 'package:telos/src/features/home/presentation/home_screen.dart';
+import 'package:telos/src/utils/logger.dart';
+import 'package:telos/src/routing/app_routes.dart';
+import 'package:telos/src/routing/auth_guard.dart';
 
 part 'app_router.g.dart';
 

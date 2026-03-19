@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../routing/app_routes.dart';
+import 'package:telos/src/routing/app_routes.dart';
 
 /// Placeholder register screen. Full sign-up form can be added next.
 class RegisterScreen extends StatelessWidget {

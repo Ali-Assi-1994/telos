@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../common_widgets/app_button.dart';
-import '../../../common_widgets/app_text_field.dart';
-import '../../../exceptions/app_exception.dart';
-import '../../../routing/app_routes.dart';
-import 'sign_in_controller.dart';
+import 'package:telos/src/common_widgets/app_button.dart';
+import 'package:telos/src/common_widgets/app_text_field.dart';
+import 'package:telos/src/exceptions/app_exception.dart';
+import 'package:telos/src/routing/app_routes.dart';
+import 'package:telos/src/features/auth/presentation/sign_in_controller.dart';
 
 /// Login screen matching Banani "Calm Day Planner" design (Calm Mint theme).
 /// Email/password only; encouraging copy per business rules.

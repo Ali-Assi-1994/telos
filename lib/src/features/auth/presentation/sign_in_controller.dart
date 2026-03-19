@@ -1,6 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 
 part 'sign_in_controller.g.dart';
 
