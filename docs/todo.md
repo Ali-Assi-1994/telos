@@ -31,18 +31,21 @@ review, in priority order. Check items off as they're completed.
 
 ## Medium
 
-- [ ] **Resolve the import-convention contradiction.** CLAUDE.md says use
+- [x] **Resolve the import-convention contradiction.** CLAUDE.md said use
       relative imports within a feature; `analysis_options.yaml` enforces
       `always_use_package_imports: true` / `prefer_relative_imports: false`.
-      All 77 same-feature imports in the codebase follow the linter, not the
-      doc. Decide which is correct and align the other.
-- [ ] **Move `features/navigation/` into `common_widgets/`.** The bottom nav
-      bar is shared UI chrome, not a functional feature per the project's own
-      definition ("what the user does").
-- [ ] **`home/`, `timer/`, `profile/` are placeholder features** with no
+      Since all 77 same-feature imports already followed the linter (and
+      rewriting them to relative would fail `dart analyze`), updated
+      CLAUDE.md's "## Imports" section to match the enforced rule instead.
+- [x] **Move `features/navigation/` into `common_widgets/`.** Moved
+      `main_bottom_nav_bar.dart` from `features/navigation/presentation/` to
+      `common_widgets/` and updated the one import site (`app_router.dart`);
+      removed the now-empty `features/navigation/` folder.
+- [x] **`home/`, `timer/`, `profile/` are placeholder features** with no
       data/domain layers and aren't part of the documented feature list.
-      Not wrong, just don't present them as finished — give them proper
-      layers when actually built out.
+      Added a doc comment to `timer_screen.dart` and `profile_screen.dart`
+      (matching `home_screen.dart`'s existing one) flagging them as
+      placeholders needing real data/domain layers before being built out.
 
 ## Carried over from the earlier code review
 

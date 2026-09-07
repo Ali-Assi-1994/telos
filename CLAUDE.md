@@ -525,21 +525,25 @@ final count = ref.watch(
 
 ## Imports
 
-- Use **relative imports** within the same feature.
-- Use **package imports** when crossing feature boundaries.
+- Use **package imports** everywhere, including within the same feature.
+  This is enforced by `analysis_options.yaml`
+  (`always_use_package_imports: true`, `prefer_relative_imports: false`) —
+  `dart analyze` fails on a relative import.
 
 ```dart
-// Within the same feature — relative
-import '../domain/task.dart';
-import '../../data/task_repository.dart';
+// Within the same feature — package import
+import 'package:my_app/src/features/tasks/domain/task.dart';
+import 'package:my_app/src/features/tasks/data/task_repository.dart';
 
-// Crossing feature boundaries — package
+// Crossing feature boundaries — package import
 import 'package:my_app/src/features/auth/domain/app_user.dart';
 ```
 
-A package import is a signal that you are crossing a feature boundary.
-If you see many package imports inside one feature, consider whether a
-shared domain model belongs in `common_widgets/` or a shared `domain/` area.
+Because both same-feature and cross-feature imports look identical, an
+unusually high number of imports from another feature's `data/` or
+`presentation/` layer (rather than its `domain/`) is the signal to watch
+for — it usually means a shared domain model belongs in `common_widgets/`
+or a shared `domain/` area instead.
 
 ---
 

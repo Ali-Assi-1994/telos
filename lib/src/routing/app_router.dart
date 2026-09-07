@@ -10,7 +10,7 @@ import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/auth/presentation/login_screen.dart';
 import 'package:telos/src/features/auth/presentation/register_screen.dart';
 import 'package:telos/src/features/home/presentation/home_screen.dart';
-import 'package:telos/src/features/navigation/presentation/main_bottom_nav_bar.dart';
+import 'package:telos/src/common_widgets/main_bottom_nav_bar.dart';
 import 'package:telos/src/features/profile/presentation/profile_screen.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_screen.dart';
 import 'package:telos/src/features/timer/presentation/timer_screen.dart';
