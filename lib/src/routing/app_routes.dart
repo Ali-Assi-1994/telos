@@ -16,6 +16,8 @@ final class AppRoutes {
   static const String tasks = '/tasks';
   static const String taskCreate = '/tasks/create';
   static const String taskEdit = '/tasks/edit';
+  static const String timer = '/timer';
+  static const String profile = '/profile';
 
   // Groups
   static const String groups = '/groups';

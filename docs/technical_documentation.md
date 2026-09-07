@@ -477,16 +477,16 @@ GoRouter with three files:
 
 ```dart
 // app_routes.dart — path constants only
-abstract class AppRoutes {
-  static const login        = '/auth/login';
-  static const register     = '/auth/register';
-  static const home         = '/home';
-  static const taskCreate   = '/tasks/create';
-  static const taskEdit     = '/tasks/:taskId/edit';
-  static const groups       = '/groups';
-  static const joinGroup    = '/groups/join';
-  static const leaderboard  = '/leaderboard';
-  static const profile      = '/profile';
+final class AppRoutes {
+  static const splash = '/';
+  static const home = '/home';
+  static const login = '/auth/login';
+  static const register = '/auth/register';
+  static const tasks = '/tasks';
+  static const timer = '/timer';
+  static const profile = '/profile';
+  static const taskCreate = '/tasks/create';
+  static const taskEdit = '/tasks/edit';
 }
 
 // auth_guard.dart — redirect logic only
@@ -513,6 +513,13 @@ Navigation rules:
 - `context.go()` — replace current route (post-login, post-logout)
 - `context.push()` — drill into a sub-screen
 - Never `Navigator.push` for main app flows
+- Main tabs (`/home`, `/tasks`, `/timer`, `/profile`) are hosted by a `StatefulShellRoute.indexedStack` so one floating bottom navigation bar stays mounted while only tab content changes
+
+Main bottom navigation tabs (Crystal style):
+- Home icon → `AppRoutes.home`
+- Backlog icon → `AppRoutes.tasks`
+- Timer icon → `AppRoutes.timer`
+- Profile icon → `AppRoutes.profile`
 
 ---
 

@@ -20,6 +20,14 @@ class AuthAppException extends AppException {
   String toUserMessage() => message;
 }
 
+/// Database and repository operation failures.
+class DatabaseAppException extends AppException {
+  const DatabaseAppException(super.message, {Object? cause});
+
+  @override
+  String toUserMessage() => message;
+}
+
 /// Generic unknown error, used as a fallback.
 class UnknownAppException extends AppException {
   const UnknownAppException({Object? cause})

@@ -10,23 +10,36 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    final ColorScheme calmColorScheme = const ColorScheme(
+      brightness: Brightness.light,
+      primary: AppColors.calmPrimary,
+      onPrimary: AppColors.calmPrimaryForeground,
+      secondary: AppColors.calmSecondary,
+      onSecondary: AppColors.calmSecondaryForeground,
+      error: Color(0xFFB42318),
+      onError: Colors.white,
+      surface: AppColors.calmCard,
+      onSurface: AppColors.calmForeground,
+    ).copyWith(
+      onSurfaceVariant: AppColors.calmMutedForeground,
+      secondaryContainer: AppColors.calmSecondary,
+      onSecondaryContainer: AppColors.calmSecondaryForeground,
+      tertiary: AppColors.calmAccent,
+      tertiaryContainer: AppColors.calmAccent,
+      onTertiaryContainer: AppColors.calmAccentForeground,
+      outline: AppColors.calmBorder,
+      outlineVariant: AppColors.calmBorder,
+    );
 
     return MaterialApp.router(
       title: 'Telos',
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.brandSeed),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.brandSeed,
-          brightness: Brightness.dark,
-        ),
+        colorScheme: calmColorScheme,
+        scaffoldBackgroundColor: AppColors.calmBackground,
         useMaterial3: true,
       ),
       routerConfig: router,
     );
   }
 }
-

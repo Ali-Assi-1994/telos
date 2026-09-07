@@ -13,5 +13,10 @@ abstract final class AppColors {
   static const Color calmPrimary = Color(0xFF16A085);
   static const Color calmPrimaryForeground = Color(0xFFFFFFFF);
   static const Color calmMutedForeground = Color(0xFF6B7280);
+  static const Color calmCard = Color(0xFFFFFFFF);
+  static const Color calmBorder = Color(0x14000000);
+  static const Color calmSecondary = Color(0xFFE8F7F4);
+  static const Color calmSecondaryForeground = Color(0xFF0F3B35);
+  static const Color calmAccent = Color(0xFF8B5CF6);
+  static const Color calmAccentForeground = Color(0xFFFFFFFF);
 }
-
