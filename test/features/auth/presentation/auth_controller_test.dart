@@ -1,0 +1,78 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:telos/src/exceptions/app_exception.dart';
+import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/presentation/auth_controller.dart';
+
+import '../data/fakes/fake_auth_repository.dart';
+
+void main() {
+  late FakeAuthRepository authRepository;
+  late ProviderContainer container;
+
+  setUp(() {
+    authRepository = FakeAuthRepository();
+    container = ProviderContainer(
+      overrides: <Override>[
+        authRepositoryProvider.overrideWithValue(authRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+  });
+
+  test('signIn success clears loading and leaves no error', () async {
+    await container
+        .read(authControllerProvider.notifier)
+        .signIn(email: 'user@example.com', password: 'password123');
+
+    final AsyncValue<void> state = container.read(authControllerProvider);
+    expect(state.isLoading, isFalse);
+    expect(state.hasError, isFalse);
+    expect(authRepository.currentSession, isNotNull);
+  });
+
+  test('signIn failure surfaces AuthAppException with the friendly message',
+      () async {
+    authRepository.failNextAuth = true;
+    authRepository.failureMessage =
+        'Invalid email or password. Please try again.';
+
+    await container
+        .read(authControllerProvider.notifier)
+        .signIn(email: 'user@example.com', password: 'wrong-password');
+
+    final AsyncValue<void> state = container.read(authControllerProvider);
+    expect(state.hasError, isTrue);
+    final Object? error = state.error;
+    expect(error, isA<AuthAppException>());
+    expect(
+      (error! as AuthAppException).toUserMessage(),
+      'Invalid email or password. Please try again.',
+    );
+    expect(authRepository.currentSession, isNull);
+  });
+
+  test('signUp success stores a session', () async {
+    await container.read(authControllerProvider.notifier).signUp(
+          fullName: 'Ada Lovelace',
+          email: 'ada@example.com',
+          password: 'password123',
+        );
+
+    expect(container.read(authControllerProvider).hasError, isFalse);
+    expect(authRepository.currentSession, isNotNull);
+  });
+
+  test('signOut clears the session', () async {
+    await container
+        .read(authControllerProvider.notifier)
+        .signIn(email: 'user@example.com', password: 'password123');
+    expect(authRepository.currentSession, isNotNull);
+
+    await container.read(authControllerProvider.notifier).signOut();
+
+    expect(container.read(authControllerProvider).hasError, isFalse);
+    expect(authRepository.currentSession, isNull);
+  });
+}
