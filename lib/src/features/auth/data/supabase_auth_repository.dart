@@ -5,23 +5,35 @@ import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/services/supabase_service.dart';
 import 'package:telos/src/utils/logger.dart';
 import 'package:telos/src/features/auth/data/auth_repository.dart';
+import 'package:telos/src/features/auth/domain/app_user.dart';
 
 part 'supabase_auth_repository.g.dart';
 
 /// Supabase-backed implementation of [AuthRepository].
 ///
-/// Maps [AuthException] to [AuthAppException] with user-friendly messages.
+/// Maps [AuthException] to [AuthAppException] with user-friendly messages,
+/// and Supabase's [User] to the app's own [AppUser] so no other layer needs
+/// to know the SDK type exists.
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
   final SupabaseClient _client;
 
   @override
-  Stream<Session?> get authStateChanges =>
-      _client.auth.onAuthStateChange.map((e) => e.session);
+  Stream<AppUser?> get authStateChanges =>
+      _client.auth.onAuthStateChange.map((e) => _toAppUser(e.session?.user));
 
   @override
-  Session? get currentSession => _client.auth.currentSession;
+  AppUser? get currentUser => _toAppUser(_client.auth.currentSession?.user);
+
+  AppUser? _toAppUser(User? user) {
+    if (user == null) return null;
+    return AppUser(
+      id: user.id,
+      email: user.email,
+      fullName: user.userMetadata?['full_name'] as String?,
+    );
+  }
 
   @override
   Future<void> signInWithPassword({

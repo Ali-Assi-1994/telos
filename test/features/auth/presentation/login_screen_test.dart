@@ -63,7 +63,7 @@ void main() {
     await tester.tap(find.text('Log In'));
     await tester.pumpAndSettle();
 
-    expect(authRepository.currentSession, isNotNull);
+    expect(authRepository.currentUser, isNotNull);
     expect(find.byType(SnackBar), findsNothing);
   });
 

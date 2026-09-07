@@ -1,12 +1,12 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/domain/app_user.dart';
 
 part 'auth_state_provider.g.dart';
 
-/// Current auth state. [User] when signed in, null when signed out.
+/// Current auth state. [AppUser] when signed in, null when signed out.
 @riverpod
-Stream<User?> authState(AuthStateRef ref) {
-  return ref.watch(authRepositoryProvider).authStateChanges.map((s) => s?.user);
+Stream<AppUser?> authState(AuthStateRef ref) {
+  return ref.watch(authRepositoryProvider).authStateChanges;
 }

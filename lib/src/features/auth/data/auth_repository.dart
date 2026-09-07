@@ -1,15 +1,15 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:telos/src/features/auth/domain/app_user.dart';
 
 /// Contract for authentication operations.
 ///
 /// Implementations use Supabase Auth; callers receive domain-friendly
 /// results or [AppException] on failure.
 abstract class AuthRepository {
-  /// Stream of auth state changes. Emits [Session?] (null when signed out).
-  Stream<Session?> get authStateChanges;
+  /// Stream of auth state changes. Emits `null` when signed out.
+  Stream<AppUser?> get authStateChanges;
 
-  /// Current session if signed in.
-  Session? get currentSession;
+  /// Current user if signed in.
+  AppUser? get currentUser;
 
   /// Signs up a new user with email and password.
   ///

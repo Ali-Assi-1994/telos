@@ -29,7 +29,7 @@ void main() {
     final AsyncValue<void> state = container.read(authControllerProvider);
     expect(state.isLoading, isFalse);
     expect(state.hasError, isFalse);
-    expect(authRepository.currentSession, isNotNull);
+    expect(authRepository.currentUser, isNotNull);
   });
 
   test('signIn failure surfaces AuthAppException with the friendly message',
@@ -50,7 +50,7 @@ void main() {
       (error! as AuthAppException).toUserMessage(),
       'Invalid email or password. Please try again.',
     );
-    expect(authRepository.currentSession, isNull);
+    expect(authRepository.currentUser, isNull);
   });
 
   test('signUp success stores a session', () async {
@@ -61,18 +61,18 @@ void main() {
         );
 
     expect(container.read(authControllerProvider).hasError, isFalse);
-    expect(authRepository.currentSession, isNotNull);
+    expect(authRepository.currentUser, isNotNull);
   });
 
   test('signOut clears the session', () async {
     await container
         .read(authControllerProvider.notifier)
         .signIn(email: 'user@example.com', password: 'password123');
-    expect(authRepository.currentSession, isNotNull);
+    expect(authRepository.currentUser, isNotNull);
 
     await container.read(authControllerProvider.notifier).signOut();
 
     expect(container.read(authControllerProvider).hasError, isFalse);
-    expect(authRepository.currentSession, isNull);
+    expect(authRepository.currentUser, isNull);
   });
 }

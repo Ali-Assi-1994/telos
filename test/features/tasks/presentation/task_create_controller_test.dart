@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/presentation/task_create_controller.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_providers.dart';
@@ -17,23 +17,11 @@ void main() {
   late FakeAuthRepository authRepository;
   late ProviderContainer container;
 
-  final User testUser = User(
-    id: 'user-1',
-    appMetadata: const <String, dynamic>{},
-    userMetadata: const <String, dynamic>{},
-    aud: 'authenticated',
-    createdAt: DateTime(2026).toIso8601String(),
-  );
+  const AppUser testUser = AppUser(id: 'user-1', email: 'user@example.com');
 
   setUp(() {
     taskRepository = FakeTaskRepository();
-    authRepository = FakeAuthRepository(
-      initialSession: Session(
-        accessToken: 'token',
-        tokenType: 'bearer',
-        user: testUser,
-      ),
-    );
+    authRepository = FakeAuthRepository(initialUser: testUser);
     container = ProviderContainer(
       overrides: <Override>[
         taskRepositoryProvider.overrideWithValue(taskRepository),
