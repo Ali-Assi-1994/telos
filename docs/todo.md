@@ -22,7 +22,7 @@ review, in priority order. Check items off as they're completed.
       `app_button.dart`, `app_text_field.dart`, `main_bottom_nav_bar.dart`.
       The `tasks` feature widgets do this correctly — use them as the
       reference.
-- [ ] **Stop rebuilding the entire `GoRouter` instance on every auth change.**
+- [x] **Stop rebuilding the entire `GoRouter` instance on every auth change.**
       `app_router.dart`'s `appRouterProvider` calls `ref.watch(authStateProvider)`
       inside its body, so Riverpod reconstructs the whole `GoRouter` (not just
       re-evaluates `redirect`) on every sign-in/sign-out/token refresh. Use a

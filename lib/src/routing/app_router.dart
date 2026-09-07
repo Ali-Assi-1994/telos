@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
+import 'package:telos/src/features/auth/data/auth_repository.dart';
+import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
+import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/auth/presentation/login_screen.dart';
 import 'package:telos/src/features/auth/presentation/register_screen.dart';
 import 'package:telos/src/features/home/presentation/home_screen.dart';
@@ -17,18 +21,26 @@ import 'package:telos/src/routing/auth_guard.dart';
 part 'app_router.g.dart';
 
 /// Top-level router configuration for the app.
+///
+/// Built exactly once: only [authRepositoryProvider] (a stable singleton) is
+/// watched, so this provider's body never re-runs. Auth-driven redirects are
+/// instead handled by [_AuthRefreshListenable], which notifies GoRouter to
+/// re-evaluate `redirect` without tearing down and rebuilding the whole
+/// [GoRouter] instance (and its navigation stack) on every sign-in/sign-out.
 @Riverpod(keepAlive: true)
 GoRouter appRouter(AppRouterRef ref) {
-  final authState = ref.watch(authStateProvider);
-  final isAuthenticated = authState.valueOrNull != null;
+  final authRepository = ref.watch(authRepositoryProvider);
+  final authListenable = _AuthRefreshListenable(authRepository);
+  ref.onDispose(authListenable.dispose);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
+    refreshListenable: authListenable,
     redirect: (context, state) {
       final redirectLocation = authGuardRedirect(
         state: state,
-        isAuthenticated: isAuthenticated,
+        isAuthenticated: authListenable.isAuthenticated,
       );
       if (redirectLocation != null) {
         AppLogger.routing.info('Redirecting to $redirectLocation');
@@ -128,5 +140,27 @@ class _SplashScreen extends StatelessWidget {
         child: CircularProgressIndicator(),
       ),
     );
+  }
+}
+
+/// Bridges [AuthRepository.authStateChanges] to a [Listenable] GoRouter can
+/// use as `refreshListenable`, so only `redirect` re-runs on auth changes
+/// instead of the entire [GoRouter] instance being rebuilt.
+class _AuthRefreshListenable extends ChangeNotifier {
+  _AuthRefreshListenable(AuthRepository authRepository)
+      : isAuthenticated = authRepository.currentUser != null {
+    _subscription = authRepository.authStateChanges.listen((AppUser? user) {
+      isAuthenticated = user != null;
+      notifyListeners();
+    });
+  }
+
+  bool isAuthenticated;
+  late final StreamSubscription<AppUser?> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }
