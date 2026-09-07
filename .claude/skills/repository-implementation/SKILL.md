@@ -1,0 +1,171 @@
+---
+name: repository-implementation
+description: Implement an abstract repository interface with a Supabase concrete class and its Riverpod provider. Use when adding a new repository to an existing feature or expanding an existing one with new methods.
+---
+
+# Repository Implementation
+
+## What This Skill Does
+Generates or expands a repository — the abstract interface, the Supabase
+concrete implementation, and the `keepAlive` Riverpod provider. Enforces
+the correct transport choice for each operation type.
+
+## Transport Decision — Ask First
+
+Before writing any repository method, decide which transport to use:
+
+| Situation | Transport |
+|---|---|
+| Simple read / write, no integrity rules | SDK direct `.from().select()` |
+| Atomic operation, integrity-critical | Postgres RPC `.rpc()` |
+| External API call, needs secrets | Edge Function `.functions.invoke()` |
+
+Never mix transports inside one method. If a method needs both a DB write
+and an external call, split them into two methods.
+
+## Abstract Interface Rules
+- One interface per repository file.
+- Methods return domain models only — never DTOs, never raw JSON.
+- Use `Future<T>` for single values, `Future<List<T>>` for collections.
+- Use `Stream<T>` only for Realtime subscriptions.
+- Name methods as verbs: `getTasksForDate`, `createTask`, `completeTask`.
+
+```dart
+// features/<feature>/data/<feature>_repository.dart
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+
+abstract class <Feature>Repository {
+  // reads
+  Future<List<<Model>>> getAll(String userId);
+  Future<<Model>?> getById(String id);
+
+  // writes
+  Future<<Model>> create(<Model> model);
+  Future<void> update(<Model> model);
+  Future<void> delete(String id);
+
+  // RPC operations (integrity-critical)
+  Future<<Result>> <atomicAction>(String id, String userId);
+
+  // Realtime
+  Stream<List<<Model>>> watch(String userId);
+}
+```
+
+## Supabase Implementation Rules
+- Class name: `Supabase<Feature>Repository`.
+- Receives `SupabaseClient` via constructor injection — never calls
+  `Supabase.instance.client` directly.
+- Every method wraps Supabase calls in try/catch.
+- Catches `PostgrestException` → throws `AppException.database`.
+- Catches `AuthException` → throws `AppException.auth`.
+- Converts all responses through the DTO before returning.
+- Insert maps never include `id`, `created_at`, or `updated_at`.
+
+```dart
+// features/<feature>/data/supabase_<feature>_repository.dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:my_app/src/exceptions/app_exception.dart';
+import 'package:my_app/src/features/<feature>/data/<feature>_dto.dart';
+import 'package:my_app/src/features/<feature>/data/<feature>_repository.dart';
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+import 'package:my_app/src/services/supabase_service.dart';
+
+part 'supabase_<feature>_repository.g.dart';
+
+@Riverpod(keepAlive: true)
+<Feature>Repository <feature>Repository(<Feature>RepositoryRef ref) =>
+    Supabase<Feature>Repository(ref.watch(supabaseClientProvider));
+
+class Supabase<Feature>Repository implements <Feature>Repository {
+  const Supabase<Feature>Repository(this._client);
+  final SupabaseClient _client;
+
+  // --- SDK direct: simple read ---
+  @override
+  Future<List<<Model>>> getAll(String userId) async {
+    try {
+      final response = await _client
+          .from('<table>')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+      return response.map((e) => <Model>Dto(e).toDomain()).toList();
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  // --- SDK direct: simple write ---
+  @override
+  Future<<Model>> create(<Model> model) async {
+    try {
+      final response = await _client
+          .from('<table>')
+          .insert(_toInsertMap(model))
+          .select()
+          .single();
+      return <Model>Dto(response).toDomain();
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  // --- Postgres RPC: atomic / integrity-critical ---
+  @override
+  Future<<Result>> <atomicAction>(String id, String userId) async {
+    try {
+      final result = await _client.rpc(
+        '<rpc_function_name>',
+        params: {'p_id': id, 'p_user_id': userId},
+      ) as Map<String, dynamic>;
+
+      if (result['success'] == true) {
+        return <Result>.success(data: result['data']);
+      }
+      return <Result>.failure(error: result['error'] as String);
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  // --- Realtime: stream ---
+  @override
+  Stream<List<<Model>>> watch(String userId) {
+    final controller = StreamController<List<<Model>>>();
+    final channel = _client
+        .channel('<table>_$userId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: '<table>',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: userId,
+          ),
+          callback: (_) async {
+            final items = await getAll(userId);
+            controller.add(items);
+          },
+        )
+        .subscribe();
+
+    // Caller must cancel the stream to unsubscribe
+    controller.onCancel = () => channel.unsubscribe();
+    return controller.stream;
+  }
+
+  Map<String, dynamic> _toInsertMap(<Model> model) => {
+    'user_id': model.userId,
+    // map fields — never id, created_at, updated_at
+  };
+}
+```
+
+## Provider Rules
+- Always `@Riverpod(keepAlive: true)` — repositories are singletons.
+- Provider lives in the same file as the Supabase implementation.
+- Provider returns the abstract type (`<Feature>Repository`), not the concrete class.
+- This is the only place the concrete class is referenced outside of tests.

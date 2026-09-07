@@ -1,0 +1,250 @@
+---
+name: flutter-feature-generator
+description: Scaffold a complete new feature following the Bizzotto feature-first architecture. Use when asked to create a new feature, add a new functional area, or generate the full folder structure for a domain concept.
+---
+
+# Flutter Feature Generator
+
+## What This Skill Does
+Generates the complete folder structure and all required files for a new feature. A feature is a **functional area** (what the user does), not a screen.
+
+## Before You Start
+1. Confirm the feature name as a functional verb phrase — e.g. `tasks`, `auth`, `leaderboard`, not `home_screen` or `task_list_page`.
+2. Identify which domain models the feature owns.
+3. Decide if an `application/` layer is needed — only if the feature coordinates two or more repositories.
+4. Check `BUSINESS_RULES.md` for any domain rules that affect the model or repository.
+
+## Folder Structure to Generate
+
+```
+lib/src/features/<feature_name>/
+├── data/
+│   ├── <feature>_repository.dart         # abstract interface
+│   ├── supabase_<feature>_repository.dart # concrete Supabase implementation
+│   └── <feature>_dto.dart                # raw JSON → domain conversion
+├── domain/
+│   └── <feature_model>.dart              # freezed domain model
+├── application/                          # only if needed
+│   └── <feature>_service.dart
+└── presentation/
+    ├── <feature>_screen.dart
+    ├── <feature>_controller.dart         # AsyncNotifier
+    └── widgets/
+        └── <feature>_card.dart
+```
+
+## File Templates
+
+### 1. Abstract Repository — `<feature>_repository.dart`
+```dart
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+
+abstract class <Feature>Repository {
+  Future<List<<Model>>> getAll(String userId);
+  Future<<Model>> create(<Model> model);
+  Future<void> delete(String id);
+}
+```
+
+### 2. Domain Model — `<model>.dart`
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part '<model>.freezed.dart';
+part '<model>.g.dart';
+
+@freezed
+class <Model> with _$<Model> {
+  const factory <Model>({
+    required String id,
+    required String userId,
+    // add fields here
+    required DateTime createdAt,
+  }) = _<Model>;
+
+  factory <Model>.fromJson(Map<String, dynamic> json) =>
+      _$<Model>FromJson(json);
+}
+```
+
+### 3. DTO — `<feature>_dto.dart`
+```dart
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+
+class <Model>Dto {
+  const <Model>Dto(this.json);
+  final Map<String, dynamic> json;
+
+  <Model> toDomain() => <Model>(
+    id:        json['id'] as String,
+    userId:    json['user_id'] as String,
+    createdAt: DateTime.parse(json['created_at'] as String),
+    // map remaining fields
+  );
+}
+```
+
+### 4. Supabase Repository — `supabase_<feature>_repository.dart`
+```dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:my_app/src/exceptions/app_exception.dart';
+import 'package:my_app/src/features/<feature>/data/<feature>_dto.dart';
+import 'package:my_app/src/features/<feature>/data/<feature>_repository.dart';
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+import 'package:my_app/src/services/supabase_service.dart';
+
+part 'supabase_<feature>_repository.g.dart';
+
+@Riverpod(keepAlive: true)
+<Feature>Repository <feature>Repository(<Feature>RepositoryRef ref) =>
+    Supabase<Feature>Repository(ref.watch(supabaseClientProvider));
+
+class Supabase<Feature>Repository implements <Feature>Repository {
+  const Supabase<Feature>Repository(this._client);
+  final SupabaseClient _client;
+
+  @override
+  Future<List<<Model>>> getAll(String userId) async {
+    try {
+      final response = await _client
+          .from('<table_name>')
+          .select()
+          .eq('user_id', userId);
+      return response
+          .map((e) => <Model>Dto(e).toDomain())
+          .toList();
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  @override
+  Future<<Model>> create(<Model> model) async {
+    try {
+      final response = await _client
+          .from('<table_name>')
+          .insert(_toInsertMap(model))
+          .select()
+          .single();
+      return <Model>Dto(response).toDomain();
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    try {
+      await _client.from('<table_name>').delete().eq('id', id);
+    } on PostgrestException catch (e) {
+      throw AppException.database(e.message, code: e.code);
+    }
+  }
+
+  Map<String, dynamic> _toInsertMap(<Model> model) => {
+    'user_id': model.userId,
+    // map fields — never include id, created_at, updated_at
+  };
+}
+```
+
+### 5. Controller — `<feature>_controller.dart`
+```dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:my_app/src/features/<feature>/data/<feature>_repository.dart';
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+import 'package:my_app/src/utils/logger.dart';
+
+part '<feature>_controller.g.dart';
+
+// Read-only provider — no class needed
+@riverpod
+Future<List<<Model>>> <feature>List(<Feature>ListRef ref) async {
+  final userId = ref.watch(currentUserProvider).requireValue.uid;
+  return ref.read(<feature>RepositoryProvider).getAll(userId);
+}
+
+// Mutation controller
+@riverpod
+class <Feature>Controller extends _$<Feature>Controller {
+  @override
+  FutureOr<void> build() {}
+
+  Future<void> create(<Model> model) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(<feature>RepositoryProvider).create(model),
+    );
+    if (!state.hasError) {
+      ref.invalidate(<feature>ListProvider);
+      AppLogger.<feature>.info('Created: ${model.id}');
+    }
+  }
+
+  Future<void> delete(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(<feature>RepositoryProvider).delete(id),
+    );
+    if (!state.hasError) {
+      ref.invalidate(<feature>ListProvider);
+      AppLogger.<feature>.info('Deleted: $id');
+    }
+  }
+}
+```
+
+### 6. Screen — `<feature>_screen.dart`
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '<feature>_controller.dart';
+
+class <Feature>Screen extends ConsumerWidget {
+  const <Feature>Screen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(<feature>ListProvider);
+
+    ref.listen(<feature>ControllerProvider, (_, next) {
+      if (next.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error.toUserMessage())),
+        );
+      }
+    });
+
+    return Scaffold(
+      body: state.when(
+        data: (items) => _<Feature>List(items: items),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text(e.toUserMessage())),
+      ),
+    );
+  }
+}
+
+class _<Feature>List extends StatelessWidget {
+  const _<Feature>List({required this.items});
+  final List items;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) => <Feature>Card(item: items[index]),
+    );
+  }
+}
+```
+
+## Rules
+- Always generate all 6 files together — never partial scaffolds.
+- Always add `AppLogger.<feature>` calls in the controller.
+- Never include `id`, `created_at`, or `updated_at` in insert maps.
+- Never put business logic in the screen — it belongs in the controller.
+- Always use relative imports within the feature, package imports across features.
+- Run `dart run build_runner build --delete-conflicting-outputs` after generation.
+- Add `AppLogger.<feature>` to `src/utils/logger.dart` after generating a new feature.

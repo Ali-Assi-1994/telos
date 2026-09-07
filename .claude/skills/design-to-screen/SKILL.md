@@ -1,0 +1,201 @@
+---
+name: design-to-screen
+description: Convert a UI design into a complete Flutter screen with correct widget hierarchy, controller wiring, routing, and theming. Use when implementing a full screen from a Figma or image design.
+---
+
+# Design to Screen
+
+## What This Skill Does
+Translates a UI design into a complete Flutter screen — decomposing the
+layout into widgets, wiring state via the correct controller and providers,
+applying theming, and placing the file in the correct feature folder.
+
+## Step 1 — Analyse the Design Before Writing Code
+
+Answer these questions first:
+1. Which feature does this screen belong to?
+2. What data does it display? Which provider supplies it?
+3. What actions can the user take? Which controller handles them?
+4. Does it need a new controller or can it use an existing one?
+5. What are the loading, error, and empty states?
+6. Does it need `ConsumerWidget` or `ConsumerStatefulWidget`?
+
+Only start writing after answering all six.
+
+## Step 2 — Decompose the Design into Widget Classes
+
+Break the design into named private widget classes before writing any code.
+Each class should map to a visible section of the design.
+
+```
+TaskCreateScreen            ← root ConsumerWidget, owns controller wiring
+  └── _TaskCreateForm       ← form container, owns form state
+        ├── _TitleField     ← single text input
+        ├── _CategorySelector ← grid of category chips
+        ├── _PointsSlider   ← points input
+        ├── _DatePicker     ← date selection
+        └── _SubmitButton   ← submit with loading state
+```
+
+Document this decomposition in a comment at the top of the file before
+generating any widget code.
+
+## Step 3 — Screen Template
+
+```dart
+// features/<feature>/presentation/<name>_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../common_widgets/error_card.dart';
+import '../domain/<model>.dart';
+import '<feature>_controller.dart';
+
+/// Screen decomposition:
+/// <ScreenName>
+///   └── _<Section1>
+///   └── _<Section2>
+///         └── _<SubWidget>
+
+class <Name>Screen extends ConsumerWidget {
+  const <Name>Screen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Wire side effects before building UI
+    ref.listen(<feature>ControllerProvider, (_, state) {
+      if (state.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.error.toUserMessage())),
+        );
+      }
+      if (!state.isLoading && !state.hasError) {
+        context.pop();
+      }
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('<Screen Title>'),
+      ),
+      body: SafeArea(
+        child: ref.watch(<data>Provider).when(
+          data: (data) => _<MainContent>(data: data),
+          loading: () => const _<LoadingSkeleton>(),
+          error: (e, _) => ErrorCard(message: e.toUserMessage()),
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Step 4 — Form Screens
+
+For screens with forms, manage form state locally in a
+`ConsumerStatefulWidget`. The controller handles the submission.
+
+```dart
+class _TaskCreateForm extends ConsumerStatefulWidget {
+  const _TaskCreateForm();
+
+  @override
+  ConsumerState<_TaskCreateForm> createState() => _TaskCreateFormState();
+}
+
+class _TaskCreateFormState extends ConsumerState<_TaskCreateForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  int? _selectedCategoryId;
+  int _points = 5;
+  DateTime _assignedDate = DateTime.now();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedCategoryId == null) return;
+
+    ref.read(taskCreateControllerProvider.notifier).createTask(
+      Task(
+        id: '',
+        userId: ref.read(currentUserProvider).requireValue.uid,
+        title: _titleController.text.trim(),
+        assignedDate: _assignedDate,
+        categoryId: _selectedCategoryId!,
+        points: _points,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoading = ref.watch(
+      taskCreateControllerProvider.select((s) => s.isLoading),
+    );
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _TitleField(controller: _titleController),
+          const SizedBox(height: 16),
+          _CategorySelector(
+            selectedId: _selectedCategoryId,
+            onSelected: (id) => setState(() => _selectedCategoryId = id),
+          ),
+          const SizedBox(height: 16),
+          _SubmitButton(isLoading: isLoading, onPressed: _submit),
+        ],
+      ),
+    );
+  }
+}
+```
+
+## Step 5 — Map Design Tokens to Theme
+
+| Design element | Flutter equivalent |
+|---|---|
+| Primary brand color | `colorScheme.primary` |
+| Card background | `colorScheme.surface` |
+| Body text | `textTheme.bodyMedium` |
+| Headline | `textTheme.titleLarge` |
+| Caption / label | `textTheme.labelSmall` |
+| Disabled / subtle | `colorScheme.outline` |
+| Destructive action | `colorScheme.error` |
+| Success / points | `colorScheme.tertiary` |
+
+Never map a hex color from the design directly into code. Always find the
+nearest semantic `ColorScheme` token.
+
+## Step 6 — Route Registration
+
+After generating the screen, register it in `src/routing/app_router.dart`
+and add the path constant to `src/routing/app_routes.dart`:
+
+```dart
+// app_routes.dart
+static const taskCreate = '/tasks/create';
+
+// app_router.dart
+GoRoute(
+  path: AppRoutes.taskCreate,
+  builder: (context, state) => const TaskCreateScreen(),
+),
+```
+
+## Rules
+- Always decompose the design into named private widget classes before coding.
+- Always use `ConsumerWidget` unless form/animation state requires `ConsumerStatefulWidget`.
+- Always wire `ref.listen` for controller side effects before returning `Scaffold`.
+- Always handle loading, error, and empty states — never assume data is ready.
+- Always use `Theme.of(context).colorScheme` — never hardcode colors from the design.
+- Always register the screen in the router after generating it.
+- Never put business logic in the screen — it belongs in the controller.
+- Place the screen file in `features/<feature>/presentation/`.

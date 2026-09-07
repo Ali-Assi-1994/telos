@@ -1,0 +1,230 @@
+---
+name: adaptive-layout
+description: Build adaptive and responsive layouts that work correctly on mobile (iOS/Android) and web. Use when implementing any screen or widget that must adapt to different screen sizes or platforms.
+---
+
+# Adaptive Layout
+
+## What This Skill Does
+Generates Flutter layouts that work correctly across mobile (iOS, Android)
+and web using a single codebase. Covers breakpoints, navigation patterns,
+layout switching, and platform-specific behavior.
+
+## Breakpoints
+
+Use these three breakpoints consistently across the app:
+
+```dart
+// src/utils/breakpoints.dart
+abstract class Breakpoints {
+  static const double mobile  = 600;   // < 600: mobile
+  static const double tablet  = 900;   // 600–900: tablet / narrow web
+  static const double desktop = 1200;  // > 900: wide web / desktop
+}
+
+extension BreakpointContext on BuildContext {
+  bool get isMobile  => MediaQuery.sizeOf(this).width < Breakpoints.mobile;
+  bool get isTablet  => MediaQuery.sizeOf(this).width < Breakpoints.tablet;
+  bool get isDesktop => MediaQuery.sizeOf(this).width >= Breakpoints.tablet;
+}
+```
+
+## Layout Switch Pattern
+
+Use `LayoutBuilder` for widget-level decisions, `MediaQuery` for
+screen-level decisions.
+
+```dart
+// Widget-level — responds to available space
+class TaskListLayout extends StatelessWidget {
+  const TaskListLayout({super.key, required this.tasks});
+  final List<Task> tasks;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      if (constraints.maxWidth >= Breakpoints.tablet) {
+        return _DesktopTaskLayout(tasks: tasks);
+      }
+      return _MobileTaskLayout(tasks: tasks);
+    },
+  );
+}
+
+// Screen-level — responds to full screen width
+class HomeScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return context.isDesktop
+        ? const _DesktopHomeLayout()
+        : const _MobileHomeLayout();
+  }
+}
+```
+
+## Navigation Pattern per Breakpoint
+
+```dart
+// Mobile: BottomNavigationBar
+// Tablet: NavigationRail (side)
+// Desktop: NavigationDrawer (persistent side)
+
+class AppShell extends ConsumerWidget {
+  const AppShell({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMobile = context.isMobile;
+    final isDesktop = context.isDesktop;
+
+    if (isDesktop) {
+      return Scaffold(
+        body: Row(
+          children: [
+            const _AppNavigationDrawer(),
+            Expanded(child: child),
+          ],
+        ),
+      );
+    }
+
+    if (!isMobile) {
+      return Scaffold(
+        body: Row(
+          children: [
+            const _AppNavigationRail(),
+            const VerticalDivider(width: 1),
+            Expanded(child: child),
+          ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      body: child,
+      bottomNavigationBar: const _AppBottomNav(),
+    );
+  }
+}
+```
+
+## Content Width Constraints
+
+On wide screens, content should be centred with a max width — not stretched
+across the full browser window.
+
+```dart
+class _ContentContainer extends StatelessWidget {
+  const _ContentContainer({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 800),
+      child: child,
+    ),
+  );
+}
+```
+
+Apply max width constraints to:
+- Screen body content
+- Forms and input areas
+- Feed/list layouts
+
+Do NOT constrain: navigation elements, full-bleed headers, background layers.
+
+## Grid vs List
+
+```dart
+// Mobile: single column list
+// Tablet+: multi-column grid
+
+Widget buildTaskLayout(List<Task> tasks, BuildContext context) {
+  if (context.isMobile) {
+    return ListView.builder(
+      itemCount: tasks.length,
+      itemBuilder: (_, i) => TaskCard(task: tasks[i]),
+    );
+  }
+
+  return GridView.builder(
+    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+      maxCrossAxisExtent: 320,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 2.5,
+    ),
+    itemCount: tasks.length,
+    itemBuilder: (_, i) => TaskCard(task: tasks[i]),
+  );
+}
+```
+
+## Platform-Specific Behaviour
+
+```dart
+import 'package:flutter/foundation.dart';
+
+// Cursor vs touch
+bool get isPointerDevice =>
+    kIsWeb || defaultTargetPlatform == TargetPlatform.macOS ||
+    defaultTargetPlatform == TargetPlatform.windows;
+
+// Hover effects — web and desktop only
+MouseRegion(
+  cursor: isPointerDevice
+      ? SystemMouseCursors.click
+      : MouseCursor.defer,
+  child: ...,
+)
+
+// Scrollbar — always visible on web/desktop
+Scrollbar(
+  thumbVisibility: kIsWeb,
+  child: ListView.builder(...),
+)
+```
+
+## Spacing — Scale with Screen Size
+
+```dart
+EdgeInsets adaptivePadding(BuildContext context) {
+  if (context.isDesktop) {
+    return const EdgeInsets.symmetric(horizontal: 48, vertical: 32);
+  }
+  if (context.isTablet) {
+    return const EdgeInsets.symmetric(horizontal: 32, vertical: 24);
+  }
+  return const EdgeInsets.symmetric(horizontal: 16, vertical: 16);
+}
+```
+
+## Font Scaling
+
+Never disable font scaling. Design layouts that accommodate up to 1.5x
+system font size. Test with `MediaQuery.textScalerOf(context)`.
+
+## SafeArea
+
+Always wrap screen bodies in `SafeArea` on mobile. On web, `SafeArea` is
+a no-op so it's safe to always include it.
+
+```dart
+body: SafeArea(
+  child: ...,
+),
+```
+
+## Rules
+
+- Always use `LayoutBuilder` or `context.isDesktop/isMobile` — never hardcode pixel checks inline.
+- Always constrain content width on desktop with `ConstrainedBox(maxWidth: 800)`.
+- Always switch navigation pattern: `BottomNav` → `NavigationRail` → `NavigationDrawer`.
+- Always use `ListView.builder` on mobile and `GridView.builder` on tablet+.
+- Never disable font scaling — layouts must accommodate system text size.
+- Always include `SafeArea` on screen body widgets.
+- Never use `MediaQuery.of(context).size` directly — use `MediaQuery.sizeOf(context)` to avoid unnecessary rebuilds.
+- Always test layouts at 360px (small mobile), 600px (tablet), and 1280px (desktop) widths.

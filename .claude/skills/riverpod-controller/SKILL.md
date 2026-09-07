@@ -1,0 +1,201 @@
+---
+name: riverpod-controller
+description: Generate a Riverpod controller for a feature. Use when adding state management to a screen, implementing a mutation, or managing UI state that needs to survive widget rebuilds.
+---
+
+# Riverpod Controller
+
+## What This Skill Does
+Generates the correct Riverpod provider or controller class for a given
+use case. Always uses `@riverpod` code generation — never manual providers.
+
+## Step 1 — Pick the Right Type
+
+Ask: what does this state need to do?
+
+| Need | Type | Example |
+|---|---|---|
+| Fetch data, no mutation | `@riverpod` function | `tasksForDate`, `leaderboard` |
+| Mutation only, no initial data | `AsyncNotifier<void>` | `TaskCreateController` |
+| Load a resource + mutate it | `AsyncNotifier<T>` | `TaskEditController` |
+| Synchronous UI state | `Notifier<T>` | `SelectedDateController` |
+| Real-time stream | `StreamProvider` / `@riverpod` stream | `tasksStream` |
+
+## Pattern 1 — Read-Only Data Provider
+
+No class needed. Use a plain `@riverpod` function.
+
+```dart
+part 'tasks_providers.g.dart';
+
+// Simple async fetch
+@riverpod
+Future<List<Task>> tasksForDate(TasksForDateRef ref) async {
+  final date   = ref.watch(selectedDateProvider);
+  final userId = ref.watch(currentUserProvider).requireValue.uid;
+  return ref.read(taskRepositoryProvider).getTasksForDate(userId, date);
+}
+
+// With select() to limit rebuilds
+@riverpod
+Future<DailyPerformance> dailyPerformance(DailyPerformanceRef ref) async {
+  final date   = ref.watch(selectedDateProvider);
+  final userId = ref.watch(currentUserProvider).requireValue.uid;
+  return ref.read(performanceRepositoryProvider).getForDate(userId, date);
+}
+```
+
+## Pattern 2 — Mutation-Only Controller
+
+Use `AsyncNotifier<void>` when there is no data to load — only actions.
+
+```dart
+part 'task_create_controller.g.dart';
+
+@riverpod
+class TaskCreateController extends _$TaskCreateController {
+  @override
+  FutureOr<void> build() {
+    // void — nothing to initialise
+  }
+
+  Future<void> createTask(Task task) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(taskRepositoryProvider).createTask(task),
+    );
+    if (!state.hasError) {
+      // Invalidate all affected read providers
+      ref.invalidate(tasksForDateProvider);
+      ref.invalidate(dailyPerformanceProvider);
+      AppLogger.tasks.info('Task created: ${task.id}');
+    }
+  }
+
+  Future<void> deleteTask(String taskId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(taskRepositoryProvider).deleteTask(taskId),
+    );
+    if (!state.hasError) {
+      ref.invalidate(tasksForDateProvider);
+      ref.invalidate(dailyPerformanceProvider);
+    }
+  }
+}
+```
+
+## Pattern 3 — Load + Mutate Controller
+
+Use `AsyncNotifier<T>` when the controller both loads data and mutates it.
+
+```dart
+part 'task_edit_controller.g.dart';
+
+@riverpod
+class TaskEditController extends _$TaskEditController {
+  @override
+  Future<Task> build(String taskId) async {
+    // Load the task on init
+    final userId = ref.watch(currentUserProvider).requireValue.uid;
+    return ref.read(taskRepositoryProvider).getById(taskId, userId);
+  }
+
+  Future<void> updateTask(Task updated) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(taskRepositoryProvider).updateTask(updated),
+    );
+    if (!state.hasError) {
+      ref.invalidate(tasksForDateProvider);
+    }
+  }
+}
+```
+
+## Pattern 4 — Synchronous State
+
+Use `Notifier<T>` for UI state that has no async operations.
+
+```dart
+part 'selected_date_controller.g.dart';
+
+@riverpod
+class SelectedDate extends _$SelectedDate {
+  @override
+  DateTime build() => DateTime.now();
+
+  void setDate(DateTime date) => state = date;
+
+  void goToToday() => state = DateTime.now();
+
+  void advance(int days) =>
+      state = state.add(Duration(days: days));
+}
+```
+
+## Pattern 5 — Realtime Stream
+
+```dart
+part 'tasks_stream_provider.g.dart';
+
+@riverpod
+Stream<List<Task>> tasksStream(TasksStreamRef ref, String userId) {
+  return ref.read(taskRepositoryProvider).watch(userId);
+}
+```
+
+## Using Controllers in Widgets
+
+### Triggering mutations
+```dart
+// Use ref.read inside callbacks — never ref.watch
+ElevatedButton(
+  onPressed: () => ref
+      .read(taskCreateControllerProvider.notifier)
+      .createTask(task),
+)
+```
+
+### Listening for side effects
+```dart
+// Use ref.listen for navigation / snackbars — never ref.watch for side effects
+ref.listen(taskCreateControllerProvider, (_, state) {
+  if (state.hasError) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(state.error.toUserMessage())),
+    );
+  }
+  if (!state.isLoading && !state.hasError) {
+    context.pop();
+  }
+});
+```
+
+### Rendering async state
+```dart
+// Always handle all three states
+ref.watch(tasksForDateProvider).when(
+  data:    (tasks) => _TaskList(tasks: tasks),
+  loading: () => const _TaskListSkeleton(),
+  error:   (e, _) => ErrorCard(message: e.toUserMessage()),
+);
+```
+
+### Limiting rebuilds with select()
+```dart
+// Only rebuild when count changes, not on any task field mutation
+final count = ref.watch(
+  tasksForDateProvider.select((v) => v.valueOrNull?.length ?? 0),
+);
+```
+
+## Rules
+- Always use `@riverpod` generation — never `Provider(...)` or `FutureProvider(...)`.
+- Always add `part 'filename.g.dart'` at the top of the file.
+- Always use `ref.read` inside callbacks and mutation methods.
+- Always use `ref.watch` inside `build()` and provider body functions.
+- Always use `AsyncValue.guard()` for mutations — never bare try/catch in state.
+- Always invalidate affected read providers after a successful mutation.
+- Never access `.value` on `AsyncValue` without guarding for loading/error.
+- Run `dart run build_runner build --delete-conflicting-outputs` after adding providers.

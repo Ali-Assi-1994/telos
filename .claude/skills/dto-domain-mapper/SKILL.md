@@ -1,0 +1,105 @@
+---
+name: dto-domain-mapper
+description: Create or update a DTO class that maps raw Supabase JSON to a domain model. Use when adding a new model, adding fields to an existing model, or debugging a mapping issue.
+---
+
+# DTO → Domain Mapper
+
+## What This Skill Does
+Creates the DTO class that sits between raw Supabase JSON and the clean
+domain model. Handles all type conversions, null safety, and field name
+mapping in one place.
+
+## Core Rules
+- DTOs live only in `data/` — never in `domain/` or `presentation/`.
+- DTOs are never returned from repositories — convert inside the repo.
+- Controllers and widgets must never import a DTO class.
+- One DTO per domain model.
+- The DTO is the only place that knows about Supabase column names.
+
+## Type Conversion Reference
+
+| Supabase type | Dart type | Conversion |
+|---|---|---|
+| `uuid` | `String` | `json['id'] as String` |
+| `text` | `String` | `json['title'] as String` |
+| `text` nullable | `String?` | `json['description'] as String?` |
+| `int4` / `int8` | `int` | `json['points'] as int` |
+| `bool` | `bool` | `json['is_completed'] as bool` |
+| `date` | `DateTime` | `DateTime.parse(json['assigned_date'] as String)` |
+| `timestamptz` | `DateTime` | `DateTime.parse(json['created_at'] as String)` |
+| `timestamptz` nullable | `DateTime?` | `json['completed_at'] == null ? null : DateTime.parse(json['completed_at'] as String)` |
+| `jsonb` | `Map<String, dynamic>` | `json['metadata'] as Map<String, dynamic>` |
+| foreign key `uuid` | `String` | `json['user_id'] as String` |
+
+## DTO Template
+
+```dart
+// features/<feature>/data/<model>_dto.dart
+import 'package:my_app/src/features/<feature>/domain/<model>.dart';
+
+class <Model>Dto {
+  const <Model>Dto(this.json);
+  final Map<String, dynamic> json;
+
+  <Model> toDomain() => <Model>(
+    id:          json['id'] as String,
+    userId:      json['user_id'] as String,
+    title:       json['title'] as String,
+    description: json['description'] as String?,
+
+    // DATE column — parse as string, no time component
+    assignedDate: DateTime.parse(json['assigned_date'] as String),
+
+    // TIMESTAMPTZ — full ISO-8601 with timezone
+    createdAt: DateTime.parse(json['created_at'] as String),
+
+    // Nullable TIMESTAMPTZ
+    completedAt: json['completed_at'] == null
+        ? null
+        : DateTime.parse(json['completed_at'] as String),
+
+    // int
+    points: json['points'] as int,
+
+    // bool with default fallback
+    isCompleted: json['is_completed'] as bool? ?? false,
+    isLocked:    json['is_locked'] as bool? ?? false,
+
+    // foreign key
+    categoryId: json['category_id'] as int,
+  );
+}
+```
+
+## Insert Map Pattern
+
+The insert map lives in the repository (`_toInsertMap`), not in the DTO.
+The DTO only handles reading — never writing.
+
+```dart
+// In supabase_<feature>_repository.dart
+Map<String, dynamic> _toInsertMap(<Model> model) => {
+  'user_id':       model.userId,
+  'title':         model.title,
+  'description':   model.description,
+
+  // DATE: always 'yyyy-MM-dd' — never full ISO-8601
+  'assigned_date': model.assignedDate.toIso8601String().split('T').first,
+
+  'points':      model.points,
+  'category_id': model.categoryId,
+
+  // Never include: id, created_at, updated_at, is_locked
+  // Never include server-managed or auto-generated fields
+};
+```
+
+## Checklist Before Finishing
+- [ ] Every Supabase column the query returns has a corresponding mapping.
+- [ ] All `DATE` columns use `DateTime.parse()` not `DateTime.tryParse()`.
+- [ ] Nullable columns use `as Type?` not `as Type`.
+- [ ] No `as` cast without confirming the Supabase column type.
+- [ ] Insert map excludes `id`, `created_at`, `updated_at`, and any server-managed fields.
+- [ ] DTO file is in `data/`, not `domain/`.
+- [ ] DTO is only imported by the repository file in the same feature.
