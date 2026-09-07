@@ -47,5 +47,12 @@ class AuthController extends _$AuthController {
       () => ref.read(authRepositoryProvider).signInWithApple(),
     );
   }
+
+  Future<void> signOut() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).signOut(),
+    );
+  }
 }
 
