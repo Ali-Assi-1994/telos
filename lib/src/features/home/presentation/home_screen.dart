@@ -20,14 +20,17 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline_rounded,
-                size: 64, color: Color(0xFF16A085)),
-            SizedBox(height: 16),
-            Text('You\'re in. Tasks will go here.'),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 16),
+            const Text('You\'re in. Tasks will go here.'),
           ],
         ),
       ),

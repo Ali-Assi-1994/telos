@@ -17,7 +17,7 @@ review, in priority order. Check items off as they're completed.
 
 ## High
 
-- [ ] **Replace hardcoded color literals with `Theme.of(context).colorScheme`.**
+- [x] **Replace hardcoded color literals with `Theme.of(context).colorScheme`.**
       Found in `home_screen.dart`, `login_screen.dart`, `register_screen.dart`,
       `app_button.dart`, `app_text_field.dart`, `main_bottom_nav_bar.dart`.
       The `tasks` feature widgets do this correctly — use them as the

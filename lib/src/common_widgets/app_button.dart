@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:telos/src/constants/app_colors.dart';
-
 /// Primary filled button matching the Banani Calm Day Planner auth design.
 class AppPrimaryButton extends StatelessWidget {
   const AppPrimaryButton({
@@ -17,11 +15,12 @@ class AppPrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return FilledButton(
       onPressed: isLoading ? null : onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: AppColors.calmPrimary,
-        foregroundColor: AppColors.calmPrimaryForeground,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -29,12 +28,12 @@ class AppPrimaryButton extends StatelessWidget {
         elevation: 0,
       ),
       child: isLoading
-          ? const SizedBox(
+          ? SizedBox(
               height: 20,
               width: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.white,
+                color: colorScheme.onPrimary,
               ),
             )
           : Text(
@@ -61,16 +60,17 @@ class AppOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.calmForeground,
-        side: const BorderSide(color: Color(0xFFE5E7EB)),
+        foregroundColor: colorScheme.onSurface,
+        side: BorderSide(color: colorScheme.outlineVariant),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
       ),
       child: child,
     );

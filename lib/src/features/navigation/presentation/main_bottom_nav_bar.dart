@@ -50,12 +50,12 @@ class MainBottomNavBar extends StatelessWidget {
       paddingR: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       itemPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       borderRadius: 999,
-      backgroundColor: Colors.white.withValues(alpha: 0.28),
+      backgroundColor: colorScheme.surface.withValues(alpha: 0.28),
       borderWidth: 0.9,
-      outlineBorderColor: Colors.white.withValues(alpha: 0.45),
+      outlineBorderColor: colorScheme.surface.withValues(alpha: 0.45),
       boxShadow: <BoxShadow>[
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.03),
+          color: colorScheme.shadow.withValues(alpha: 0.03),
           blurRadius: 16,
           offset: const Offset(0, 8),
         ),

@@ -28,10 +28,9 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors are taken from the login Calm Mint design and mapped into
-    // the existing theme color scheme where possible.
-    const mutedColor = Color(0xFF6B7280);
-    const secondaryColor = Color(0xFFE8F7F4);
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color mutedColor = colorScheme.onSurfaceVariant;
+    final Color secondaryColor = colorScheme.secondaryContainer;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,7 +39,7 @@ class AppTextField extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: mutedColor,
@@ -55,7 +54,7 @@ class AppTextField extends StatelessWidget {
           autofillHints: autofillHints,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: mutedColor),
+            hintStyle: TextStyle(color: mutedColor),
             prefixIcon: prefixIcon == null
                 ? null
                 : Icon(

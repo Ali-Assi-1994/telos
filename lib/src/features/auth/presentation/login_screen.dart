@@ -328,10 +328,10 @@ class _SocialDivider extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Divider(
             thickness: 1,
-            color: Color(0xFFE5E7EB),
+            color: theme.colorScheme.outlineVariant,
           ),
         ),
         Padding(
@@ -339,15 +339,15 @@ class _SocialDivider extends StatelessWidget {
           child: Text(
             label,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: AppColors.calmMutedForeground,
+              color: theme.colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const Expanded(
+        Expanded(
           child: Divider(
             thickness: 1,
-            color: Color(0xFFE5E7EB),
+            color: theme.colorScheme.outlineVariant,
           ),
         ),
       ],
