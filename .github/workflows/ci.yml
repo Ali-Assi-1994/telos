@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to the exact version used for local development. `channel:
+      # stable` alone can silently resolve to a newer Flutter/Dart than what
+      # the pinned analyzer/build_runner/riverpod_generator versions in
+      # pubspec.lock were tested against, which has been observed to hang
+      # the codegen step indefinitely instead of failing outright.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.0"
+          channel: stable
+          cache: true
+
+      # pubspec.yaml bundles .env.dev as a Flutter asset, but it's gitignored
+      # (real secrets never get committed). CI provides a placeholder with the
+      # same keys so the asset bundle builds — analyze/test don't touch Supabase.
+      - name: Create placeholder env file
+        run: cp .env.example .env.dev
+
+      - name: Install dependencies
+        run: make get
+
+      - name: Generate code (Riverpod / Freezed)
+        run: make build_runner_build
+
+      - name: Analyze
+        run: make analyze
+
+      - name: Test
+        run: make test
