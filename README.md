@@ -1,5 +1,7 @@
 # Telos
 
+[![CI](https://github.com/Ali-Assi-1994/telos/actions/workflows/ci.yml/badge.svg)](https://github.com/Ali-Assi-1994/telos/actions/workflows/ci.yml)
+
 Productivity & accountability app built with **Flutter**, **Riverpod**, **GoRouter**, and **Supabase**.
 
 ## Stack
