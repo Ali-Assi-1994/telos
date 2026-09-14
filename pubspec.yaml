@@ -24,7 +24,7 @@ dependencies:
   json_annotation: ^4.9.0
 
   # Useful for logging, etc.
-  meta: ^1.15.0
+  meta: ^1.19.0
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.0.10+1
   crystal_navigation_bar: ^1.1.0
