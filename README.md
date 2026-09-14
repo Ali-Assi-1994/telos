@@ -30,22 +30,19 @@ See `docs/architecture.md` for the full design and dependency rules.
 
 We use `.env*` files (ignored by git) for secrets.
 
-- Copy the example:
-
-```bash
-cp .env.example .env.dev
-```
-
-- Fill in:
+- `make get` (below) creates `.env.dev` from `.env.example` automatically if
+  it doesn't exist yet, so `flutter analyze` / `flutter test` work out of the
+  box on a fresh clone.
+- To run the app against a real backend, fill in `.env.dev` with:
   - `SUPABASE_URL`
-  - `SUPABASE_ANON_KEY`
+  - `SUPABASE_PUBLISHABLE_KEY`
 
 ## Common commands
 
 - Install dependencies:
 
 ```bash
-flutter pub get
+make get
 ```
 
 - Generate Riverpod/Freezed code:
