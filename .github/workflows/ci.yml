@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # pubspec.yaml bundles .env.dev as a Flutter asset, but it's gitignored
+      # (real secrets never get committed). CI provides a placeholder with the
+      # same keys so the asset bundle builds — analyze/test don't touch Supabase.
+      - name: Create placeholder env file
+        run: cp .env.example .env.dev
+
+      - name: Install dependencies
+        run: make get
+
+      - name: Generate code (Riverpod / Freezed)
+        run: make build_runner_build
+
+      - name: Analyze
+        run: make analyze
+
+      - name: Test
+        run: make test
