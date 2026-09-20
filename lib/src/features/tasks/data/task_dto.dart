@@ -27,12 +27,15 @@ class TaskDto {
         (json['task_categories'] as List<dynamic>?) ?? <dynamic>[];
     final List<Category> categories = rawTaskCategories
         .map(
-          (dynamic item) => (item as Map<String, dynamic>)['categories']
-              as Map<String, dynamic>?,
+          (dynamic item) =>
+              (item as Map<String, dynamic>)['categories']
+                  as Map<String, dynamic>?,
         )
         .whereType<Map<String, dynamic>>()
-        .map((Map<String, dynamic> categoryJson) =>
-            CategoryDto(categoryJson).toDomain())
+        .map(
+          (Map<String, dynamic> categoryJson) =>
+              CategoryDto(categoryJson).toDomain(),
+        )
         .toList(growable: false);
 
     return Task(

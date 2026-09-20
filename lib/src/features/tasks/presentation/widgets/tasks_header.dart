@@ -31,9 +31,7 @@ class TasksHeader extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: colorScheme.outlineVariant),
-        ),
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,10 +48,7 @@ class TasksHeader extends StatelessWidget {
               onGoToToday: onGoToToday,
             ),
           ),
-          DateCarousel(
-            selectedDate: selectedDate,
-            onSelected: onDateSelected,
-          ),
+          DateCarousel(selectedDate: selectedDate, onSelected: onDateSelected),
           const SizedBox(height: 16),
         ],
       ),
@@ -112,10 +107,7 @@ class _MonthRow extends StatelessWidget {
 }
 
 class _StreakOrTasksBadge extends StatelessWidget {
-  const _StreakOrTasksBadge({
-    required this.count,
-    required this.hasStreak,
-  });
+  const _StreakOrTasksBadge({required this.count, required this.hasStreak});
 
   final int count;
   final bool hasStreak;

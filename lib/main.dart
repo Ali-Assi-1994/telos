@@ -16,8 +16,12 @@ Future<void> main() async {
   );
 
   runApp(
-    const ProviderScope(
-      child: App(),
+    ProviderScope(
+      // Riverpod 3 auto-retries failing providers by default. This app's
+      // error handling (AsyncValue.guard, .when(error: ...)) was designed
+      // around errors surfacing immediately, so restore that behavior.
+      retry: (int retryCount, Object error) => null,
+      child: const App(),
     ),
   );
 }

@@ -51,7 +51,7 @@ void main() {
         'is_locked': isLocked,
         'created_at': '2026-01-15T09:00:00.000Z',
         'updated_at': '2026-01-15T09:00:00.000Z',
-        if (taskCategories != null) 'task_categories': taskCategories,
+        'task_categories': ?taskCategories,
       };
     }
 
@@ -84,8 +84,7 @@ void main() {
       expect(task.categories.single.name, 'Work');
     });
 
-    test(
-        'defaults completed/isLocked to false and categories to empty '
+    test('defaults completed/isLocked to false and categories to empty '
         'when the row omits them', () {
       final Task task = TaskDto(baseRow()).toDomain();
 
@@ -102,10 +101,7 @@ void main() {
             <String, dynamic>{'category_id': 1, 'categories': null},
             <String, dynamic>{
               'category_id': 2,
-              'categories': <String, dynamic>{
-                'id': 2,
-                'name': 'Health',
-              },
+              'categories': <String, dynamic>{'id': 2, 'name': 'Health'},
             },
           ],
         ),

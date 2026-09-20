@@ -9,7 +9,7 @@ class TaskListLoadingSkeleton extends StatelessWidget {
     return ListView.builder(
       itemCount: 6,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-      itemBuilder: (_, __) => Container(
+      itemBuilder: (_, _) => Container(
         margin: const EdgeInsets.only(bottom: 8),
         height: 70,
         decoration: BoxDecoration(

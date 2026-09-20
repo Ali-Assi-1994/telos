@@ -29,7 +29,8 @@ class CreateTaskSheet extends ConsumerStatefulWidget {
     required DateTime assignedDate,
     required TimeOfDay startTime,
     required List<int> categoryIds,
-  }) onCreate;
+  })
+  onCreate;
 
   @override
   ConsumerState<CreateTaskSheet> createState() => _CreateTaskSheetState();
@@ -68,8 +69,9 @@ class _CreateTaskSheetState extends ConsumerState<CreateTaskSheet> {
       child: AnimatedPadding(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
           child: Form(
@@ -80,9 +82,7 @@ class _CreateTaskSheetState extends ConsumerState<CreateTaskSheet> {
               children: <Widget>[
                 const SheetHandle(),
                 const SizedBox(height: 16),
-                SheetHeader(
-                  onClose: () => Navigator.of(context).pop(),
-                ),
+                SheetHeader(onClose: () => Navigator.of(context).pop()),
                 const SizedBox(height: 16),
                 TaskTitleField(
                   controller: _titleController,
@@ -102,21 +102,24 @@ class _CreateTaskSheetState extends ConsumerState<CreateTaskSheet> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: durationOptions.map((DurationOption option) {
-                    final bool isSelected = option.isCustom
-                        ? _isCustomDurationSelected
-                        : !_isCustomDurationSelected &&
-                            option.minutes == _selectedDurationMinutes;
-                    return InfoTag(
-                      icon: option.isCustom ? Icons.tune_rounded : null,
-                      text: option.isCustom
-                          ? _customDurationChipLabel()
-                          : option.label,
-                      highlighted: isSelected,
-                      onPressed:
-                          isLoading ? null : () => _onDurationSelected(option),
-                    );
-                  }).toList(growable: false),
+                  children: durationOptions
+                      .map((DurationOption option) {
+                        final bool isSelected = option.isCustom
+                            ? _isCustomDurationSelected
+                            : !_isCustomDurationSelected &&
+                                  option.minutes == _selectedDurationMinutes;
+                        return InfoTag(
+                          icon: option.isCustom ? Icons.tune_rounded : null,
+                          text: option.isCustom
+                              ? _customDurationChipLabel()
+                              : option.label,
+                          highlighted: isSelected,
+                          onPressed: isLoading
+                              ? null
+                              : () => _onDurationSelected(option),
+                        );
+                      })
+                      .toList(growable: false),
                 ),
                 const SizedBox(height: 14),
                 SectionTitle(
@@ -152,11 +155,11 @@ class _CreateTaskSheetState extends ConsumerState<CreateTaskSheet> {
     if (option.isCustom) {
       final CustomDurationResult? result =
           await showDialog<CustomDurationResult>(
-        context: context,
-        builder: (BuildContext context) => CustomDurationPickerDialog(
-          initialDurationMinutes: _selectedDurationMinutes,
-        ),
-      );
+            context: context,
+            builder: (BuildContext context) => CustomDurationPickerDialog(
+              initialDurationMinutes: _selectedDurationMinutes,
+            ),
+          );
       if (result == null) return;
       setState(() {
         _isCustomDurationSelected = true;

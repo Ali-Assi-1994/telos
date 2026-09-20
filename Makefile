@@ -10,10 +10,10 @@ get:
 	flutter pub get
 
 build_runner_build:
-	dart run build_runner build --delete-conflicting-outputs
+	dart run build_runner build
 
 build_runner_watch:
-	dart run build_runner watch --delete-conflicting-outputs
+	dart run build_runner watch
 
 test:
 	flutter test --coverage

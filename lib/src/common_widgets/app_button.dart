@@ -22,9 +22,7 @@ class AppPrimaryButton extends StatelessWidget {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 0,
       ),
       child: isLoading
@@ -38,10 +36,7 @@ class AppPrimaryButton extends StatelessWidget {
             )
           : Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
     );
   }
@@ -67,9 +62,7 @@ class AppOutlineButton extends StatelessWidget {
         foregroundColor: colorScheme.onSurface,
         side: BorderSide(color: colorScheme.outlineVariant),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         backgroundColor: colorScheme.surface,
       ),
       child: child,

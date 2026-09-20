@@ -14,7 +14,7 @@ import 'package:telos/src/features/tasks/domain/task_create_input.dart';
 part 'supabase_task_repository.g.dart';
 
 @Riverpod(keepAlive: true)
-TaskRepository taskRepository(TaskRepositoryRef ref) {
+TaskRepository taskRepository(Ref ref) {
   return SupabaseTaskRepository(ref.watch(supabaseClientProvider));
 }
 
@@ -32,12 +32,17 @@ class SupabaseTaskRepository implements TaskRepository {
           .order('name');
 
       return rows
-          .map((dynamic row) =>
-              CategoryDto(row as Map<String, dynamic>).toDomain())
+          .map(
+            (dynamic row) =>
+                CategoryDto(row as Map<String, dynamic>).toDomain(),
+          )
           .toList(growable: false);
     } on PostgrestException catch (e, st) {
-      AppLogger.tasks
-          .error('Failed to load categories', error: e, stackTrace: st);
+      AppLogger.tasks.error(
+        'Failed to load categories',
+        error: e,
+        stackTrace: st,
+      );
       throw DatabaseAppException(
         'Could not load categories right now. Please try again.',
         cause: e,
@@ -54,15 +59,13 @@ class SupabaseTaskRepository implements TaskRepository {
       final String assignedDate = _dateOnly(date);
       final List<dynamic> rows = await _client
           .from('tasks')
-          .select(
-            '''
+          .select('''
 id,template_id,user_id,title,description,points,assigned_date,completed,completed_at,is_locked,created_at,updated_at,
 task_categories(
   category_id,
   categories(id,name,icon,color)
 )
-''',
-          )
+''')
           .eq('user_id', userId)
           .eq('assigned_date', assignedDate)
           .order('created_at');
@@ -71,8 +74,11 @@ task_categories(
           .map((dynamic row) => TaskDto(row as Map<String, dynamic>).toDomain())
           .toList(growable: false);
     } on PostgrestException catch (e, st) {
-      AppLogger.tasks
-          .error('Failed to load tasks for date', error: e, stackTrace: st);
+      AppLogger.tasks.error(
+        'Failed to load tasks for date',
+        error: e,
+        stackTrace: st,
+      );
       throw DatabaseAppException(
         'Could not load tasks right now. Please try again.',
         cause: e,
@@ -85,18 +91,19 @@ task_categories(
     _validateTaskCreateInput(input);
 
     try {
-      final Map<String, dynamic> insertedTask =
-          await _client.from('tasks').insert(<String, dynamic>{
-        'user_id': input.userId,
-        'title': input.title.trim(),
-        'description': input.description?.trim(),
-        'points': input.points,
-        'assigned_date': _dateOnly(input.assignedDate),
-      }).select(
-        '''
+      final Map<String, dynamic> insertedTask = await _client
+          .from('tasks')
+          .insert(<String, dynamic>{
+            'user_id': input.userId,
+            'title': input.title.trim(),
+            'description': input.description?.trim(),
+            'points': input.points,
+            'assigned_date': _dateOnly(input.assignedDate),
+          })
+          .select('''
 id,template_id,user_id,title,description,points,assigned_date,completed,completed_at,is_locked,created_at,updated_at
-''',
-      ).single();
+''')
+          .single();
 
       final String taskId = insertedTask['id'] as String;
       final List<Map<String, dynamic>> categoryRows = input.categoryIds
@@ -111,15 +118,13 @@ id,template_id,user_id,title,description,points,assigned_date,completed,complete
 
       final List<dynamic> fullRows = await _client
           .from('tasks')
-          .select(
-            '''
+          .select('''
 id,template_id,user_id,title,description,points,assigned_date,completed,completed_at,is_locked,created_at,updated_at,
 task_categories(
   category_id,
   categories(id,name,icon,color)
 )
-''',
-          )
+''')
           .eq('id', taskId)
           .limit(1);
       final Map<String, dynamic> fullTask =
@@ -177,8 +182,9 @@ task_categories(
       );
 
       if (response is List<dynamic> && response.isNotEmpty) {
-        return DailyPerformanceDto(response.first as Map<String, dynamic>)
-            .toDomain();
+        return DailyPerformanceDto(
+          response.first as Map<String, dynamic>,
+        ).toDomain();
       }
       if (response is Map<String, dynamic>) {
         return DailyPerformanceDto(response).toDomain();
@@ -212,10 +218,7 @@ task_categories(
     try {
       final dynamic result = await _client.rpc<dynamic>(
         rpcName,
-        params: <String, dynamic>{
-          'p_task_id': taskId,
-          'p_user_id': userId,
-        },
+        params: <String, dynamic>{'p_task_id': taskId, 'p_user_id': userId},
       );
 
       if (result is! Map<String, dynamic>) {

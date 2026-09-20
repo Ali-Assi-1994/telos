@@ -59,9 +59,7 @@ class SupabaseAuthRepository implements AuthRepository {
       await _client.auth.signUp(
         email: email,
         password: password,
-        data: {
-          'full_name': fullName,
-        },
+        data: {'full_name': fullName},
       );
       AppLogger.auth.info('Sign-up success: ${email.trim().toLowerCase()}');
     } on AuthException catch (e, st) {
@@ -129,5 +127,5 @@ class SupabaseAuthRepository implements AuthRepository {
 }
 
 @Riverpod(keepAlive: true)
-AuthRepository authRepository(AuthRepositoryRef ref) =>
+AuthRepository authRepository(Ref ref) =>
     SupabaseAuthRepository(ref.watch(supabaseClientProvider));

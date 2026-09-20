@@ -30,9 +30,9 @@ class AnytimeSection extends StatelessWidget {
         children: <Widget>[
           Text(
             'Any time today',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           ListView.builder(
@@ -42,8 +42,9 @@ class AnytimeSection extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               final Task task = tasks[index];
               return Padding(
-                padding:
-                    EdgeInsets.only(bottom: index == tasks.length - 1 ? 0 : 8),
+                padding: EdgeInsets.only(
+                  bottom: index == tasks.length - 1 ? 0 : 8,
+                ),
                 child: _AnytimeTaskTile(
                   task: task,
                   onToggleCompleted: () => onToggleCompleted(task),
@@ -58,10 +59,7 @@ class AnytimeSection extends StatelessWidget {
 }
 
 class _AnytimeTaskTile extends StatelessWidget {
-  const _AnytimeTaskTile({
-    required this.task,
-    required this.onToggleCompleted,
-  });
+  const _AnytimeTaskTile({required this.task, required this.onToggleCompleted});
 
   final Task task;
   final VoidCallback onToggleCompleted;
@@ -71,8 +69,9 @@ class _AnytimeTaskTile extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final TextTheme textTheme = theme.textTheme;
-    final Category? firstCategory =
-        task.categories.isNotEmpty ? task.categories.first : null;
+    final Category? firstCategory = task.categories.isNotEmpty
+        ? task.categories.first
+        : null;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -106,8 +105,9 @@ class _AnytimeTaskTile extends StatelessWidget {
                     task.title,
                     style: textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w500,
-                      decoration:
-                          task.completed ? TextDecoration.lineThrough : null,
+                      decoration: task.completed
+                          ? TextDecoration.lineThrough
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 4),

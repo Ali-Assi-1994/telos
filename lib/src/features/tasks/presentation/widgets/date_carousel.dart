@@ -74,8 +74,9 @@ class _DateCarouselState extends State<DateCarousel> {
           final DateTime weekDate = _referenceSelectedDate.add(
             Duration(days: weekOffset * 7),
           );
-          final DateTime monday =
-              weekDate.subtract(Duration(days: weekDate.weekday - 1));
+          final DateTime monday = weekDate.subtract(
+            Duration(days: weekDate.weekday - 1),
+          );
           final List<DateTime> weekDates = List<DateTime>.generate(
             7,
             (int index) =>
@@ -123,12 +124,14 @@ class _WeekDateRow extends StatelessWidget {
           child: Row(
             children: List<Widget>.generate(dates.length, (int index) {
               final DateTime date = dates[index];
-              final bool isSelected = date.year == selectedDate.year &&
+              final bool isSelected =
+                  date.year == selectedDate.year &&
                   date.month == selectedDate.month &&
                   date.day == selectedDate.day;
               return Padding(
                 padding: EdgeInsets.only(
-                    right: index == dates.length - 1 ? 0 : chipGap),
+                  right: index == dates.length - 1 ? 0 : chipGap,
+                ),
                 child: SizedBox(
                   width: clampedChipWidth,
                   child: _DateChip(

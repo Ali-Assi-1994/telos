@@ -24,10 +24,7 @@ const List<DurationOption> durationOptions = <DurationOption>[
 enum DurationUnit { minutes, hours }
 
 final class CustomDurationResult {
-  const CustomDurationResult({
-    required this.value,
-    required this.unit,
-  });
+  const CustomDurationResult({required this.value, required this.unit});
 
   final int value;
   final DurationUnit unit;
@@ -101,9 +98,7 @@ class _CustomDurationPickerDialogState
             const SizedBox(height: 12),
             DropdownButtonFormField<DurationUnit>(
               initialValue: _unit,
-              decoration: const InputDecoration(
-                labelText: 'Unit',
-              ),
+              decoration: const InputDecoration(labelText: 'Unit'),
               items: const <DropdownMenuItem<DurationUnit>>[
                 DropdownMenuItem(
                   value: DurationUnit.minutes,
@@ -131,10 +126,7 @@ class _CustomDurationPickerDialogState
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
         ),
-        FilledButton(
-          onPressed: _save,
-          child: const Text('Save'),
-        ),
+        FilledButton(onPressed: _save, child: const Text('Save')),
       ],
     );
   }
@@ -142,9 +134,7 @@ class _CustomDurationPickerDialogState
   void _save() {
     if (!_formKey.currentState!.validate()) return;
     final int value = int.parse(_valueController.text.trim());
-    Navigator.of(context).pop(
-      CustomDurationResult(value: value, unit: _unit),
-    );
+    Navigator.of(context).pop(CustomDurationResult(value: value, unit: _unit));
   }
 }
 

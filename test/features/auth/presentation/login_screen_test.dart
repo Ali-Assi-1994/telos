@@ -21,17 +21,19 @@ Future<void> _pumpLoginScreen(
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: <Override>[
-        authRepositoryProvider.overrideWithValue(authRepository),
-      ],
+      // Match the app's retry: null (main.dart) so errors surface
+      // immediately instead of Riverpod 3's default auto-retry.
+      retry: (int retryCount, Object error) => null,
+      overrides: [authRepositoryProvider.overrideWithValue(authRepository)],
       child: const MaterialApp(home: LoginScreen()),
     ),
   );
 }
 
 void main() {
-  testWidgets('shows validation errors when submitting an empty form',
-      (WidgetTester tester) async {
+  testWidgets('shows validation errors when submitting an empty form', (
+    WidgetTester tester,
+  ) async {
     await _pumpLoginScreen(tester, FakeAuthRepository());
     await tester.pumpAndSettle();
 
@@ -41,16 +43,17 @@ void main() {
     // The password field's hint text and its validator message are the same
     // string ("Enter your password"), so assert on form-field validity
     // rather than matching text.
-    final FormFieldState<String> emailField =
-        tester.state<FormFieldState<String>>(find.byType(TextFormField).at(0));
-    final FormFieldState<String> passwordField =
-        tester.state<FormFieldState<String>>(find.byType(TextFormField).at(1));
+    final FormFieldState<String> emailField = tester
+        .state<FormFieldState<String>>(find.byType(TextFormField).at(0));
+    final FormFieldState<String> passwordField = tester
+        .state<FormFieldState<String>>(find.byType(TextFormField).at(1));
     expect(emailField.hasError, isTrue);
     expect(passwordField.hasError, isTrue);
   });
 
-  testWidgets('valid credentials sign in without showing an error',
-      (WidgetTester tester) async {
+  testWidgets('valid credentials sign in without showing an error', (
+    WidgetTester tester,
+  ) async {
     final FakeAuthRepository authRepository = FakeAuthRepository();
     await _pumpLoginScreen(tester, authRepository);
     await tester.pumpAndSettle();
@@ -67,8 +70,9 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('failed sign-in shows the friendly error message in a snackbar',
-      (WidgetTester tester) async {
+  testWidgets('failed sign-in shows the friendly error message in a snackbar', (
+    WidgetTester tester,
+  ) async {
     final FakeAuthRepository authRepository = FakeAuthRepository()
       ..failNextAuth = true
       ..failureMessage = 'Invalid email or password. Please try again.';

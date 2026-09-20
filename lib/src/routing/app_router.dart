@@ -28,7 +28,7 @@ part 'app_router.g.dart';
 /// re-evaluate `redirect` without tearing down and rebuilding the whole
 /// [GoRouter] instance (and its navigation stack) on every sign-in/sign-out.
 @Riverpod(keepAlive: true)
-GoRouter appRouter(AppRouterRef ref) {
+GoRouter appRouter(Ref ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final authListenable = _AuthRefreshListenable(authRepository);
   ref.onDispose(authListenable.dispose);
@@ -135,11 +135,7 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -148,7 +144,7 @@ class _SplashScreen extends StatelessWidget {
 /// instead of the entire [GoRouter] instance being rebuilt.
 class _AuthRefreshListenable extends ChangeNotifier {
   _AuthRefreshListenable(AuthRepository authRepository)
-      : isAuthenticated = authRepository.currentUser != null {
+    : isAuthenticated = authRepository.currentUser != null {
     _subscription = authRepository.authStateChanges.listen((AppUser? user) {
       isAuthenticated = user != null;
       notifyListeners();

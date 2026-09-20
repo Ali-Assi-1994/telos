@@ -41,27 +41,25 @@ class TasksTimelineSection extends StatelessWidget {
               final TimelineItem item = timelineItems[index];
               return switch (item) {
                 final TimelineBoundaryItem boundaryItem => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _TimelineBoundaryBlock(
-                      time: boundaryItem.time,
-                    ),
-                  ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _TimelineBoundaryBlock(time: boundaryItem.time),
+                ),
                 final TimelineTaskItem taskItem => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _TimelineTaskBlock(
-                      task: taskItem.task,
-                      startTime: taskItem.startTime,
-                      endTime: taskItem.endTime,
-                      onToggleCompleted: () => onToggleCompleted(taskItem.task),
-                    ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _TimelineTaskBlock(
+                    task: taskItem.task,
+                    startTime: taskItem.startTime,
+                    endTime: taskItem.endTime,
+                    onToggleCompleted: () => onToggleCompleted(taskItem.task),
                   ),
+                ),
                 final TimelineGapItem gapItem => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _TimelineGapBlock(
-                      gapMinutes: gapItem.gapMinutes,
-                      onAddPressed: () => onAddAtTime(gapItem.gapStartTime),
-                    ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _TimelineGapBlock(
+                    gapMinutes: gapItem.gapMinutes,
+                    onAddPressed: () => onAddAtTime(gapItem.gapStartTime),
                   ),
+                ),
               };
             },
           ),
@@ -165,8 +163,9 @@ class _TaskCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final TextTheme textTheme = theme.textTheme;
-    final Category? firstCategory =
-        task.categories.isNotEmpty ? task.categories.first : null;
+    final Category? firstCategory = task.categories.isNotEmpty
+        ? task.categories.first
+        : null;
 
     return Container(
       decoration: BoxDecoration(
@@ -223,14 +222,15 @@ class _TaskCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   _CategoryCircleChip(
-                      label: _categoryBadge(firstCategory?.name)),
+                    label: _categoryBadge(firstCategory?.name),
+                  ),
                   const SizedBox(width: 8),
                   IconButton(
                     tooltip: task.isLocked
                         ? 'Task is locked'
                         : task.completed
-                            ? 'Mark incomplete'
-                            : 'Mark complete',
+                        ? 'Mark incomplete'
+                        : 'Mark complete',
                     onPressed: task.isLocked ? null : onToggleCompleted,
                     icon: Icon(
                       task.completed

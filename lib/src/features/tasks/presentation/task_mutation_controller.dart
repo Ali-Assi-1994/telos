@@ -18,24 +18,25 @@ class TaskMutationController extends _$TaskMutationController {
 
     state = const AsyncLoading();
 
-    state = await AsyncValue.guard(() async {
+    final AsyncValue<void> result = await AsyncValue.guard(() async {
       final user = await ref.read(authStateProvider.future);
       if (user == null) {
         throw StateError('User must be authenticated to update tasks.');
       }
 
       if (task.completed) {
-        await ref.read(taskRepositoryProvider).uncompleteTask(
-              taskId: task.id,
-              userId: user.id,
-            );
+        await ref
+            .read(taskRepositoryProvider)
+            .uncompleteTask(taskId: task.id, userId: user.id);
       } else {
-        await ref.read(taskRepositoryProvider).completeTask(
-              taskId: task.id,
-              userId: user.id,
-            );
+        await ref
+            .read(taskRepositoryProvider)
+            .completeTask(taskId: task.id, userId: user.id);
       }
     });
+
+    if (!ref.mounted) return;
+    state = result;
 
     if (!state.hasError) {
       ref.invalidate(tasksForSelectedDateProvider);
