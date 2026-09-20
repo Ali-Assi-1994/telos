@@ -66,7 +66,8 @@ class FakeAuthRepository implements AuthRepository {
     if (failNextAuth) {
       throw AuthAppException(failureMessage);
     }
-    final AppUser user = AppUser(id: 'user-$email', email: email, fullName: fullName);
+    final AppUser user =
+        AppUser(id: 'user-$email', email: email, fullName: fullName);
     _currentUser = user;
     _controller.add(user);
   }

@@ -84,7 +84,8 @@ void main() {
       expect(task.categories.single.name, 'Work');
     });
 
-    test('defaults completed/isLocked to false and categories to empty '
+    test(
+        'defaults completed/isLocked to false and categories to empty '
         'when the row omits them', () {
       final Task task = TaskDto(baseRow()).toDomain();
 

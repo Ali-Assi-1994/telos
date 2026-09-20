@@ -89,7 +89,8 @@ class FakeTaskRepository implements TaskRepository {
   }) async {
     completeCallCount++;
     if (throwOnComplete) {
-      throw const DatabaseAppException('Could not complete this task right now.');
+      throw const DatabaseAppException(
+          'Could not complete this task right now.');
     }
     final Task task = _findTask(taskId);
     if (task.isLocked) {

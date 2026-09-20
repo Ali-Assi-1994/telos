@@ -35,13 +35,13 @@ void main() {
     const TimeOfDay startTime = TimeOfDay(hour: 9, minute: 30);
 
     await container.read(taskCreateControllerProvider.notifier).create(
-          title: 'Plan sprint',
-          description: null,
-          points: 30,
-          assignedDate: DateTime(2026, 1, 15),
-          startTime: startTime,
-          categoryIds: const <int>[1],
-        );
+      title: 'Plan sprint',
+      description: null,
+      points: 30,
+      assignedDate: DateTime(2026, 1, 15),
+      startTime: startTime,
+      categoryIds: const <int>[1],
+    );
 
     final AsyncValue<void> state = container.read(taskCreateControllerProvider);
     expect(state.hasError, isFalse);
@@ -58,13 +58,13 @@ void main() {
 
   test('repository validation failure surfaces as an AppException', () async {
     await container.read(taskCreateControllerProvider.notifier).create(
-          title: '',
-          description: null,
-          points: 30,
-          assignedDate: DateTime(2026, 1, 15),
-          startTime: const TimeOfDay(hour: 9, minute: 0),
-          categoryIds: const <int>[1],
-        );
+      title: '',
+      description: null,
+      points: 30,
+      assignedDate: DateTime(2026, 1, 15),
+      startTime: const TimeOfDay(hour: 9, minute: 0),
+      categoryIds: const <int>[1],
+    );
 
     final AsyncValue<void> state = container.read(taskCreateControllerProvider);
     expect(state.hasError, isTrue);
