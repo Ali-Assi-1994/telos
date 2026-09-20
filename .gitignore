@@ -21,6 +21,10 @@ macos/Pods/
 # Coverage
 coverage/
 
+# Patrol
+**/test_bundle.dart
+.patrol.env
+
 # Environment / secrets (do not commit real keys)
 .env
 .env.dev
