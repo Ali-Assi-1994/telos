@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: get build_runner_build build_runner_watch test analyze
+.PHONY: get build_runner_build build_runner_watch test analyze format format_check
 
 get:
 	@if [ ! -f .env.dev ]; then \
@@ -16,8 +16,14 @@ build_runner_watch:
 	dart run build_runner watch --delete-conflicting-outputs
 
 test:
-	flutter test
+	flutter test --coverage
 
 analyze:
 	flutter analyze
+
+format:
+	dart format .
+
+format_check:
+	dart format --output none --set-exit-if-changed .
 

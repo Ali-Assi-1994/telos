@@ -43,8 +43,20 @@ jobs:
       - name: Generate code (Riverpod / Freezed)
         run: make build_runner_build
 
+      - name: Check formatting
+        run: make format_check
+
       - name: Analyze
         run: make analyze
 
       - name: Test
         run: make test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
