@@ -19,7 +19,7 @@ test:
 	flutter test --coverage
 
 analyze:
-	flutter analyze
+	dart analyze
 
 format:
 	dart format .

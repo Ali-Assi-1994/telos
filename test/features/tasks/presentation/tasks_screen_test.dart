@@ -1,3 +1,9 @@
+// ignore_for_file: riverpod_lint/scoped_providers_should_specify_dependencies
+// The ProviderScope built by buildApp() below is the root scope for the
+// widget tree under test (it's passed straight to tester.pumpWidget), but
+// riverpod_lint can't trace that through the helper function indirection and
+// conservatively warns as if it might be a nested scope.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
