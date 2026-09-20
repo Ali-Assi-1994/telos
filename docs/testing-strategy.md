@@ -60,10 +60,20 @@ fonts happen to be installed locally or in CI. `test/flutter_test_config.dart`
 overrides that: it loads the real Roboto and Material Icons fonts (bundled
 as test-only assets under `test/fonts/`, Apache-licensed, not part of the
 shipped app) so goldens actually show readable text and real icons instead
-of black boxes. This is safe to do without introducing cross-machine
-flakiness because golden rendering happens inside `flutter_tester`'s own
-engine, not the host OS; the pixels only depend on the Flutter SDK version,
-which is already pinned in CI.
+of black boxes.
+
+**This alone is not enough for cross-platform CI stability.** Golden
+rendering happens inside `flutter_tester`'s own engine rather than the host
+OS, which keeps it deterministic on one machine, but goldens generated on
+macOS still showed small pixel diffs (0.2% to 1.3%) when checked against the
+exact same widgets rendered in CI on Ubuntu, on the same Flutter SDK version
+and the same embedded fonts; subpixel antialiasing differs by host
+OS/GPU driver even then. `flutter_test_config.dart` also installs a
+small-tolerance `GoldenFileComparator` (2%, comfortably above the diffs
+actually observed) following the pattern documented directly in
+`package:flutter_test`'s own source. A real visual regression, a color,
+layout, or content change, produces a much larger diff than this and still
+fails the test.
 
 Golden PNGs live in `test/golden/goldens/`, next to the test file that
 produces them. To update one after an intentional design change:
