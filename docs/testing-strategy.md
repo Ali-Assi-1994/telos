@@ -50,20 +50,30 @@ a real simulator or emulator, still backed by fake repositories via
 `ProviderScope` overrides rather than a live Supabase backend. Written with
 [Patrol](https://patrol.leancode.co), chosen over plain `integration_test`
 for native automation capability the app will need later (permission
-dialogs, notifications) and because demonstrating Patrol experience is part
+dialogs, notifications), and because demonstrating Patrol experience is part
 of the point of this repo.
 
 **Version pinning matters.** `patrol_cli` must be a version compatible with
-the `patrol` package pinned in `pubspec.yaml` (currently `4.8.0`) — they are
+the `patrol` package pinned in `pubspec.yaml` (currently `4.10.0`); they are
 not interchangeable across versions, and installing "whatever's latest" for
-one half will silently produce a test run that builds successfully but
-discovers zero tests. `patrol_cli`'s own `patrol test` command detects this
-and tells you the exact fix. As of this writing, `patrol` `4.8.0` pairs with
-`patrol_cli` `4.6.1`:
+one half can silently produce a test run that builds successfully but
+discovers zero tests. `patrol_cli`'s own `patrol test` command usually
+detects this and tells you the exact fix. Check the
+[compatibility table](https://patrol.leancode.co/documentation/compatibility-table)
+before bumping either one. As of this writing, `patrol` `4.10.0` pairs with
+`patrol_cli` `4.8.0`:
 
 ```bash
-dart pub global activate patrol_cli 4.6.1
+dart pub global activate patrol_cli 4.8.0
 ```
+
+**Known quirk with this pairing:** on iOS, `patrol_cli 4.8.0`'s pretty
+"Test summary" block can report `Total: 0` even when every test actually
+passed. Confirmed by checking the raw output with `--verbose`, which showed
+`Test case '...' passed` from the underlying XCTest run despite the summary
+saying zero. Android reports correctly with the same versions. If an iOS run
+shows zero tests, don't assume failure; check the verbose output or the
+`.xcresult` bundle before troubleshooting further.
 
 Run all integration tests on a booted iOS Simulator or Android
 emulator/device:
@@ -84,11 +94,11 @@ Both platforms needed a one-time native bridge in addition to the
 `patrol`/`patrol_cli` install, since Patrol's Dart tests run inside a native
 instrumentation test:
 
-- **iOS**: an `RunnerUITests` XCUITest target (`ios/RunnerUITests/
+- **iOS**: a `RunnerUITests` XCUITest target (`ios/RunnerUITests/
   RunnerUITests.m`), added to the `Runner` scheme's `TestAction`, linked
   against the `FlutterGeneratedPluginSwiftPackage` Swift package (the same
-  one `Runner` itself uses — Patrol's native code ships as a Flutter plugin,
-  and Swift Package Manager dependencies aren't inherited across Xcode
+  one `Runner` itself uses, since Patrol's native code ships as a Flutter
+  plugin, and Swift Package dependencies aren't inherited across Xcode
   targets the way CocoaPods ones are), and added to `ios/Podfile` as
   `target 'RunnerUITests' do inherit! :complete end`.
 - **Android**: `android/app/src/androidTest/java/com/example/telos/
@@ -97,10 +107,21 @@ instrumentation test:
   (`testOptions.execution`, `androidTestUtil("androidx.test:orchestrator")`)
   in `android/app/build.gradle.kts`.
 
+### AI-assisted test development (Patrol MCP)
+
+`patrol_mcp` is configured in `.mcp.json`, giving an AI coding agent direct
+tools to run a test file, list attached devices, capture a screenshot, and
+read the native UI tree during an active session, without shelling out
+manually the way this setup was originally verified. Requires a session
+restart to connect after being added to `.mcp.json`. Its bundled
+`patrol_cli` dependency is what drove the `patrol_cli 4.8.0` /
+`patrol 4.10.0` pairing above; `patrol_mcp` and the standalone `patrol_cli`
+install need to agree.
+
 ### Not yet done
 
 These integration tests only run locally today; they are not wired into CI
 (`.github/workflows/ci.yml` runs `analyze`/`test`, neither of which touches
 `integration_test/`). Running them in CI needs a macOS runner for iOS and an
-emulator action (e.g. `reactivecircus/android-emulator-runner`) for Android —
+emulator action (e.g. `reactivecircus/android-emulator-runner`) for Android;
 tracked as follow-up work, not done here.
