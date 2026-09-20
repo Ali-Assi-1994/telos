@@ -26,38 +26,29 @@ class TaskStartTimeOverrides extends _$TaskStartTimeOverrides {
   @override
   Map<String, int> build() => <String, int>{};
 
-  void setOverride({
-    required String taskId,
-    required int minutesOfDay,
-  }) {
-    state = <String, int>{
-      ...state,
-      taskId: minutesOfDay,
-    };
+  void setOverride({required String taskId, required int minutesOfDay}) {
+    state = <String, int>{...state, taskId: minutesOfDay};
   }
 }
 
 @riverpod
-Future<List<Category>> categories(CategoriesRef ref) {
+Future<List<Category>> categories(Ref ref) {
   return ref.read(taskRepositoryProvider).getCategories();
 }
 
 @riverpod
-Future<List<Task>> tasksForSelectedDate(TasksForSelectedDateRef ref) async {
+Future<List<Task>> tasksForSelectedDate(Ref ref) async {
   final DateTime date = ref.watch(selectedDateProvider);
   final user = await ref.watch(authStateProvider.future);
   if (user == null) return <Task>[];
 
-  return ref.read(taskRepositoryProvider).getTasksForDate(
-        userId: user.id,
-        date: date,
-      );
+  return ref
+      .read(taskRepositoryProvider)
+      .getTasksForDate(userId: user.id, date: date);
 }
 
 @riverpod
-Future<DailyPerformance> dailyPerformanceForSelectedDate(
-  DailyPerformanceForSelectedDateRef ref,
-) async {
+Future<DailyPerformance> dailyPerformanceForSelectedDate(Ref ref) async {
   final DateTime date = ref.watch(selectedDateProvider);
   final user = await ref.watch(authStateProvider.future);
   if (user == null) {
@@ -70,8 +61,7 @@ Future<DailyPerformance> dailyPerformanceForSelectedDate(
     );
   }
 
-  return ref.read(taskRepositoryProvider).getDailyPerformance(
-        userId: user.id,
-        date: date,
-      );
+  return ref
+      .read(taskRepositoryProvider)
+      .getDailyPerformance(userId: user.id, date: date);
 }

@@ -8,6 +8,6 @@ part 'supabase_service.g.dart';
 /// Repositories should depend on this provider instead of calling
 /// [Supabase.instance.client] directly.
 @Riverpod(keepAlive: true)
-SupabaseClient supabaseClient(SupabaseClientRef ref) {
+SupabaseClient supabaseClient(Ref ref) {
   return Supabase.instance.client;
 }

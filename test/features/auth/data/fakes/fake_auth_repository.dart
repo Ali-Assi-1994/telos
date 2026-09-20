@@ -38,15 +38,13 @@ class FakeAuthRepository implements AuthRepository {
     required String fullName,
     required String email,
     required String password,
-  }) =>
-      _authenticate(email: email, fullName: fullName);
+  }) => _authenticate(email: email, fullName: fullName);
 
   @override
   Future<void> signInWithPassword({
     required String email,
     required String password,
-  }) =>
-      _authenticate(email: email);
+  }) => _authenticate(email: email);
 
   @override
   Future<void> signInWithGoogle() =>
@@ -66,8 +64,11 @@ class FakeAuthRepository implements AuthRepository {
     if (failNextAuth) {
       throw AuthAppException(failureMessage);
     }
-    final AppUser user =
-        AppUser(id: 'user-$email', email: email, fullName: fullName);
+    final AppUser user = AppUser(
+      id: 'user-$email',
+      email: email,
+      fullName: fullName,
+    );
     _currentUser = user;
     _controller.add(user);
   }

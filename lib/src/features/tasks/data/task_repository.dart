@@ -13,15 +13,9 @@ abstract class TaskRepository {
 
   Future<Task> createTask(TaskCreateInput input);
 
-  Future<void> completeTask({
-    required String taskId,
-    required String userId,
-  });
+  Future<void> completeTask({required String taskId, required String userId});
 
-  Future<void> uncompleteTask({
-    required String taskId,
-    required String userId,
-  });
+  Future<void> uncompleteTask({required String taskId, required String userId});
 
   Future<DailyPerformance> getDailyPerformance({
     required String userId,

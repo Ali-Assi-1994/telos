@@ -47,7 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authControllerProvider.notifier).signIn(
+    await ref
+        .read(authControllerProvider.notifier)
+        .signIn(
           email: _emailController.text,
           password: _passwordController.text,
         );
@@ -74,7 +76,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.sizeOf(context).height -
+              minHeight:
+                  MediaQuery.sizeOf(context).height -
                   MediaQuery.paddingOf(context).top -
                   MediaQuery.paddingOf(context).bottom,
             ),
@@ -89,9 +92,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   emailController: _emailController,
                   passwordController: _passwordController,
                   obscurePassword: _obscurePassword,
-                  onToggleObscurePassword: () => setState(
-                    () => _obscurePassword = !_obscurePassword,
-                  ),
+                  onToggleObscurePassword: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   onSubmit: _submit,
                   onSignInWithGoogle: _signInWithGoogle,
                   onSignInWithApple: _signInWithApple,
@@ -329,10 +331,7 @@ class _SocialDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Divider(
-            thickness: 1,
-            color: theme.colorScheme.outlineVariant,
-          ),
+          child: Divider(thickness: 1, color: theme.colorScheme.outlineVariant),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -345,10 +344,7 @@ class _SocialDivider extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Divider(
-            thickness: 1,
-            color: theme.colorScheme.outlineVariant,
-          ),
+          child: Divider(thickness: 1, color: theme.colorScheme.outlineVariant),
         ),
       ],
     );
@@ -373,18 +369,11 @@ class _SocialButton extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: AppColors.calmForeground,
-          ),
+          Icon(icon, size: 20, color: AppColors.calmForeground),
           const SizedBox(width: 12),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -413,10 +402,7 @@ class _GoogleSocialButton extends StatelessWidget {
           const SizedBox(width: 12),
           const Text(
             'Continue with Google',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ],
       ),

@@ -30,6 +30,6 @@ class DatabaseAppException extends AppException {
 
 /// Generic unknown error, used as a fallback.
 class UnknownAppException extends AppException {
-  const UnknownAppException({Object? cause})
-      : super('Something went wrong. Please try again.', cause: cause);
+  const UnknownAppException({super.cause})
+    : super('Something went wrong. Please try again.');
 }

@@ -39,8 +39,9 @@ class SheetHeader extends StatelessWidget {
             children: <Widget>[
               Text(
                 'Add task',
-                style:
-                    textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -230,11 +231,7 @@ class SectionTitle extends StatelessWidget {
 
     return Row(
       children: <Widget>[
-        Icon(
-          icon,
-          size: 14,
-          color: iconColor ?? colorScheme.onSurfaceVariant,
-        ),
+        Icon(icon, size: 14, color: iconColor ?? colorScheme.onSurfaceVariant),
         const SizedBox(width: 6),
         Text(
           title,

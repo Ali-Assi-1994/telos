@@ -24,7 +24,7 @@ class TaskCreateController extends _$TaskCreateController {
   }) async {
     state = const AsyncLoading();
 
-    state = await AsyncValue.guard(() async {
+    final AsyncValue<void> result = await AsyncValue.guard(() async {
       final user = await ref.read(authStateProvider.future);
       if (user == null) {
         throw StateError('User must be authenticated to create tasks.');
@@ -38,21 +38,26 @@ class TaskCreateController extends _$TaskCreateController {
         assignedDate: assignedDate,
         categoryIds: categoryIds,
       );
-      final createdTask =
-          await ref.read(taskRepositoryProvider).createTask(input);
+      final createdTask = await ref
+          .read(taskRepositoryProvider)
+          .createTask(input);
       final int minutesOfDay = (startTime.hour * 60) + startTime.minute;
-      ref.read(taskStartTimeOverridesProvider.notifier).setOverride(
-            taskId: createdTask.id,
-            minutesOfDay: minutesOfDay,
-          );
+      ref
+          .read(taskStartTimeOverridesProvider.notifier)
+          .setOverride(taskId: createdTask.id, minutesOfDay: minutesOfDay);
     });
+
+    if (!ref.mounted) return;
+    state = result;
 
     if (!state.hasError) {
       ref.invalidate(tasksForSelectedDateProvider);
       ref.invalidate(dailyPerformanceForSelectedDateProvider);
       final String formattedHour = startTime.hour.toString().padLeft(2, '0');
-      final String formattedMinute =
-          startTime.minute.toString().padLeft(2, '0');
+      final String formattedMinute = startTime.minute.toString().padLeft(
+        2,
+        '0',
+      );
       AppLogger.tasks.info(
         'Task create mutation completed for $formattedHour:$formattedMinute.',
       );

@@ -46,11 +46,13 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     });
 
     final DateTime selectedDate = ref.watch(selectedDateProvider);
-    final AsyncValue<List<Task>> tasksState =
-        ref.watch(tasksForSelectedDateProvider);
-    final Map<String, int> startTimeOverrides =
-        ref.watch(taskStartTimeOverridesProvider);
-    final int tasksCount = tasksState.valueOrNull?.length ?? 0;
+    final AsyncValue<List<Task>> tasksState = ref.watch(
+      tasksForSelectedDateProvider,
+    );
+    final Map<String, int> startTimeOverrides = ref.watch(
+      taskStartTimeOverridesProvider,
+    );
+    final int tasksCount = tasksState.value?.length ?? 0;
     final bool isViewingToday = _isSameDate(selectedDate, DateTime.now());
     return Scaffold(
       body: SafeArea(
@@ -66,18 +68,20 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
               },
               onGoToToday: () {
                 final DateTime now = DateTime.now();
-                ref.read(selectedDateProvider.notifier).setDate(
-                      DateTime(now.year, now.month, now.day),
-                    );
+                ref
+                    .read(selectedDateProvider.notifier)
+                    .setDate(DateTime(now.year, now.month, now.day));
               },
             ),
             Expanded(
               child: tasksState.when(
                 data: (List<Task> tasks) {
-                  final List<Task> todoTasks =
-                      tasks.where((Task task) => !task.completed).toList();
-                  final List<Task> completedTasks =
-                      tasks.where((Task task) => task.completed).toList();
+                  final List<Task> todoTasks = tasks
+                      .where((Task task) => !task.completed)
+                      .toList();
+                  final List<Task> completedTasks = tasks
+                      .where((Task task) => task.completed)
+                      .toList();
 
                   return ListView(
                     padding: const EdgeInsets.only(bottom: 96),
@@ -87,10 +91,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                         startTimeOverrides: startTimeOverrides,
                         onToggleCompleted: _onToggleCompleted,
                         onAddAtTime: (TimeOfDay time) {
-                          _openCreateTaskSheet(
-                            selectedDate,
-                            initialTime: time,
-                          );
+                          _openCreateTaskSheet(selectedDate, initialTime: time);
                         },
                       ),
                       AnytimeSection(
@@ -138,8 +139,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      barrierColor:
-          Theme.of(context).colorScheme.shadow.withValues(alpha: 0.16),
+      barrierColor: Theme.of(
+        context,
+      ).colorScheme.shadow.withValues(alpha: 0.16),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -148,28 +150,31 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
           initialDate: selectedDate,
           initialTime: initialTime,
           categories: categories,
-          onCreate: ({
-            required String title,
-            required String? description,
-            required int points,
-            required DateTime assignedDate,
-            required TimeOfDay startTime,
-            required List<int> categoryIds,
-          }) async {
-            await ref.read(taskCreateControllerProvider.notifier).create(
-                  title: title,
-                  description: description,
-                  points: points,
-                  assignedDate: assignedDate,
-                  startTime: startTime,
-                  categoryIds: categoryIds,
-                );
-            if (context.mounted &&
-                !ref.read(taskCreateControllerProvider).hasError &&
-                !ref.read(taskCreateControllerProvider).isLoading) {
-              Navigator.of(context).pop();
-            }
-          },
+          onCreate:
+              ({
+                required String title,
+                required String? description,
+                required int points,
+                required DateTime assignedDate,
+                required TimeOfDay startTime,
+                required List<int> categoryIds,
+              }) async {
+                await ref
+                    .read(taskCreateControllerProvider.notifier)
+                    .create(
+                      title: title,
+                      description: description,
+                      points: points,
+                      assignedDate: assignedDate,
+                      startTime: startTime,
+                      categoryIds: categoryIds,
+                    );
+                if (context.mounted &&
+                    !ref.read(taskCreateControllerProvider).hasError &&
+                    !ref.read(taskCreateControllerProvider).isLoading) {
+                  Navigator.of(context).pop();
+                }
+              },
         );
       },
     );
@@ -182,8 +187,9 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
   void _showMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }
 

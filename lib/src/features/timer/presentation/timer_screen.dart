@@ -9,12 +9,8 @@ class TimerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Timer'),
-      ),
-      body: const Center(
-        child: Text('Timer tab'),
-      ),
+      appBar: AppBar(title: const Text('Timer')),
+      body: const Center(child: Text('Timer tab')),
     );
   }
 }

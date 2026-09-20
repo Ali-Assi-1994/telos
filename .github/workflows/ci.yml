@@ -27,7 +27,7 @@ jobs:
       # the codegen step indefinitely instead of failing outright.
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.41.0"
+          flutter-version: "3.47.5"
           channel: stable
           cache: true
 

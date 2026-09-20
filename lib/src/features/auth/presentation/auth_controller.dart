@@ -15,43 +15,57 @@ class AuthController extends _$AuthController {
     required String password,
   }) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).signUpWithPassword(
+    final AsyncValue<void> result = await AsyncValue.guard(
+      () => ref
+          .read(authRepositoryProvider)
+          .signUpWithPassword(
             fullName: fullName.trim(),
             email: email.trim().toLowerCase(),
             password: password,
           ),
     );
+    if (!ref.mounted) return;
+    state = result;
   }
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).signInWithPassword(
+    final AsyncValue<void> result = await AsyncValue.guard(
+      () => ref
+          .read(authRepositoryProvider)
+          .signInWithPassword(
             email: email.trim().toLowerCase(),
             password: password,
           ),
     );
+    if (!ref.mounted) return;
+    state = result;
   }
 
   Future<void> signInWithGoogle() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final AsyncValue<void> result = await AsyncValue.guard(
       () => ref.read(authRepositoryProvider).signInWithGoogle(),
     );
+    if (!ref.mounted) return;
+    state = result;
   }
 
   Future<void> signInWithApple() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final AsyncValue<void> result = await AsyncValue.guard(
       () => ref.read(authRepositoryProvider).signInWithApple(),
     );
+    if (!ref.mounted) return;
+    state = result;
   }
 
   Future<void> signOut() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
+    final AsyncValue<void> result = await AsyncValue.guard(
       () => ref.read(authRepositoryProvider).signOut(),
     );
+    if (!ref.mounted) return;
+    state = result;
   }
 }

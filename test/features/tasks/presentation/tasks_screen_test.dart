@@ -16,7 +16,10 @@ void main() {
 
   Widget buildApp(FakeTaskRepository taskRepository) {
     return ProviderScope(
-      overrides: <Override>[
+      // Match the app's retry: null (main.dart) so errors surface
+      // immediately instead of Riverpod 3's default auto-retry.
+      retry: (int retryCount, Object error) => null,
+      overrides: [
         authRepositoryProvider.overrideWithValue(
           FakeAuthRepository(initialUser: testUser),
         ),
@@ -31,8 +34,9 @@ void main() {
     return DateTime(now.year, now.month, now.day);
   }
 
-  testWidgets('shows a task once loaded and completes it on tap',
-      (WidgetTester tester) async {
+  testWidgets('shows a task once loaded and completes it on tap', (
+    WidgetTester tester,
+  ) async {
     final FakeTaskRepository taskRepository = FakeTaskRepository();
     final DateTime today = todayDateOnly();
     taskRepository.seedTask(
@@ -59,8 +63,9 @@ void main() {
     expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
   });
 
-  testWidgets('shows an error message when loading tasks fails',
-      (WidgetTester tester) async {
+  testWidgets('shows an error message when loading tasks fails', (
+    WidgetTester tester,
+  ) async {
     final FakeTaskRepository taskRepository = FakeTaskRepository()
       ..throwOnGetTasks = true;
 

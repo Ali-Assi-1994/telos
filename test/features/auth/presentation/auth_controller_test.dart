@@ -14,11 +14,15 @@ void main() {
   setUp(() {
     authRepository = FakeAuthRepository();
     container = ProviderContainer(
-      overrides: <Override>[
-        authRepositoryProvider.overrideWithValue(authRepository),
-      ],
+      // Match the app's retry: null (main.dart) so errors surface
+      // immediately instead of Riverpod 3's default auto-retry.
+      retry: (int retryCount, Object error) => null,
+      overrides: [authRepositoryProvider.overrideWithValue(authRepository)],
     );
     addTearDown(container.dispose);
+    // Keep the autoDispose controller alive across awaits, the way the real
+    // screens' ref.watch(authControllerProvider) does.
+    container.listen(authControllerProvider, (_, _) {});
   });
 
   test('signIn success clears loading and leaves no error', () async {
@@ -32,29 +36,33 @@ void main() {
     expect(authRepository.currentUser, isNotNull);
   });
 
-  test('signIn failure surfaces AuthAppException with the friendly message',
-      () async {
-    authRepository.failNextAuth = true;
-    authRepository.failureMessage =
-        'Invalid email or password. Please try again.';
+  test(
+    'signIn failure surfaces AuthAppException with the friendly message',
+    () async {
+      authRepository.failNextAuth = true;
+      authRepository.failureMessage =
+          'Invalid email or password. Please try again.';
 
-    await container
-        .read(authControllerProvider.notifier)
-        .signIn(email: 'user@example.com', password: 'wrong-password');
+      await container
+          .read(authControllerProvider.notifier)
+          .signIn(email: 'user@example.com', password: 'wrong-password');
 
-    final AsyncValue<void> state = container.read(authControllerProvider);
-    expect(state.hasError, isTrue);
-    final Object? error = state.error;
-    expect(error, isA<AuthAppException>());
-    expect(
-      (error! as AuthAppException).toUserMessage(),
-      'Invalid email or password. Please try again.',
-    );
-    expect(authRepository.currentUser, isNull);
-  });
+      final AsyncValue<void> state = container.read(authControllerProvider);
+      expect(state.hasError, isTrue);
+      final Object? error = state.error;
+      expect(error, isA<AuthAppException>());
+      expect(
+        (error! as AuthAppException).toUserMessage(),
+        'Invalid email or password. Please try again.',
+      );
+      expect(authRepository.currentUser, isNull);
+    },
+  );
 
   test('signUp success stores a session', () async {
-    await container.read(authControllerProvider.notifier).signUp(
+    await container
+        .read(authControllerProvider.notifier)
+        .signUp(
           fullName: 'Ada Lovelace',
           email: 'ada@example.com',
           password: 'password123',

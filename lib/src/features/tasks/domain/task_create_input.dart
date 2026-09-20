@@ -4,7 +4,7 @@ part 'task_create_input.freezed.dart';
 part 'task_create_input.g.dart';
 
 @freezed
-class TaskCreateInput with _$TaskCreateInput {
+abstract class TaskCreateInput with _$TaskCreateInput {
   const factory TaskCreateInput({
     required String userId,
     required String title,

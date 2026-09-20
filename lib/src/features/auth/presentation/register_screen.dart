@@ -48,7 +48,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authControllerProvider.notifier).signUp(
+    await ref
+        .read(authControllerProvider.notifier)
+        .signUp(
           fullName: _nameController.text.trim(),
           email: _emailController.text.trim(),
           password: _passwordController.text,
@@ -76,7 +78,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.sizeOf(context).height -
+              minHeight:
+                  MediaQuery.sizeOf(context).height -
                   MediaQuery.paddingOf(context).top -
                   MediaQuery.paddingOf(context).bottom,
             ),
@@ -92,9 +95,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   emailController: _emailController,
                   passwordController: _passwordController,
                   obscurePassword: _obscurePassword,
-                  onToggleObscurePassword: () => setState(
-                    () => _obscurePassword = !_obscurePassword,
-                  ),
+                  onToggleObscurePassword: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   onSubmit: _submit,
                   onSignUpWithGoogle: _signUpWithGoogle,
                   onSignUpWithApple: _signUpWithApple,
@@ -266,10 +268,7 @@ class _SignupForm extends ConsumerWidget {
                 const SizedBox(width: 12),
                 const Text(
                   'Sign up with Google',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -280,18 +279,11 @@ class _SignupForm extends ConsumerWidget {
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.apple,
-                  size: 20,
-                  color: AppColors.calmForeground,
-                ),
+                Icon(Icons.apple, size: 20, color: AppColors.calmForeground),
                 SizedBox(width: 12),
                 Text(
                   'Sign up with Apple',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -379,10 +371,7 @@ class _SocialDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Divider(
-            thickness: 1,
-            color: theme.colorScheme.outlineVariant,
-          ),
+          child: Divider(thickness: 1, color: theme.colorScheme.outlineVariant),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -395,10 +384,7 @@ class _SocialDivider extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Divider(
-            thickness: 1,
-            color: theme.colorScheme.outlineVariant,
-          ),
+          child: Divider(thickness: 1, color: theme.colorScheme.outlineVariant),
         ),
       ],
     );

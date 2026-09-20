@@ -27,10 +27,7 @@ class TimelineTaskItem extends TimelineItem {
 }
 
 class TimelineGapItem extends TimelineItem {
-  const TimelineGapItem({
-    required this.gapStartTime,
-    required this.gapMinutes,
-  });
+  const TimelineGapItem({required this.gapStartTime, required this.gapMinutes});
 
   final TimeOfDay gapStartTime;
   final int gapMinutes;
@@ -44,29 +41,30 @@ List<TimelineItem> buildTimelineItems(
   const TimeOfDay dayEnd = TimeOfDay(hour: 23, minute: 59);
   const int dayEndMinutes = 1439;
 
-  final List<TimelineTaskItem> sortedTasks = tasks.map(
-    (Task task) {
-      final int startMinutes = startTimeOverrides[task.id] ??
-          _minutesOfDay(TimeOfDay.fromDateTime(task.createdAt.toLocal()));
-      final TimeOfDay startTime = _timeFromMinutes(startMinutes);
-      return TimelineTaskItem(
-        task: task,
-        startTime: startTime,
-        endTime: _timeFromMinutes(startMinutes + 30),
-      );
-    },
-  ).toList(growable: false)
-    ..sort((a, b) => _minutesOfDay(a.startTime) - _minutesOfDay(b.startTime));
+  final List<TimelineTaskItem> sortedTasks =
+      tasks
+          .map((Task task) {
+            final int startMinutes =
+                startTimeOverrides[task.id] ??
+                _minutesOfDay(TimeOfDay.fromDateTime(task.createdAt.toLocal()));
+            final TimeOfDay startTime = _timeFromMinutes(startMinutes);
+            return TimelineTaskItem(
+              task: task,
+              startTime: startTime,
+              endTime: _timeFromMinutes(startMinutes + 30),
+            );
+          })
+          .toList(growable: false)
+        ..sort(
+          (a, b) => _minutesOfDay(a.startTime) - _minutesOfDay(b.startTime),
+        );
 
   final List<TimelineItem> items = <TimelineItem>[];
   items.add(const TimelineBoundaryItem(time: dayStart));
 
   if (sortedTasks.isEmpty) {
     items.add(
-      const TimelineGapItem(
-        gapStartTime: dayStart,
-        gapMinutes: dayEndMinutes,
-      ),
+      const TimelineGapItem(gapStartTime: dayStart, gapMinutes: dayEndMinutes),
     );
     items.add(const TimelineBoundaryItem(time: dayEnd));
     return items;
@@ -75,10 +73,7 @@ List<TimelineItem> buildTimelineItems(
   final int firstStartMinutes = _minutesOfDay(sortedTasks.first.startTime);
   if (firstStartMinutes > 0) {
     items.add(
-      TimelineGapItem(
-        gapStartTime: dayStart,
-        gapMinutes: firstStartMinutes,
-      ),
+      TimelineGapItem(gapStartTime: dayStart, gapMinutes: firstStartMinutes),
     );
   }
 

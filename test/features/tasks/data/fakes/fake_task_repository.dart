@@ -17,7 +17,7 @@ const List<Category> _defaultCategories = <Category>[
 /// a network dependency.
 class FakeTaskRepository implements TaskRepository {
   FakeTaskRepository({List<Category>? categories})
-      : _categories = categories ?? _defaultCategories;
+    : _categories = categories ?? _defaultCategories;
 
   final List<Category> _categories;
   final List<Task> _tasks = <Task>[];
@@ -47,8 +47,10 @@ class FakeTaskRepository implements TaskRepository {
       );
     }
     return _tasks
-        .where((Task task) =>
-            task.userId == userId && _isSameDate(task.assignedDate, date))
+        .where(
+          (Task task) =>
+              task.userId == userId && _isSameDate(task.assignedDate, date),
+        )
         .toList(growable: false);
   }
 
@@ -90,7 +92,8 @@ class FakeTaskRepository implements TaskRepository {
     completeCallCount++;
     if (throwOnComplete) {
       throw const DatabaseAppException(
-          'Could not complete this task right now.');
+        'Could not complete this task right now.',
+      );
     }
     final Task task = _findTask(taskId);
     if (task.isLocked) {
@@ -118,17 +121,21 @@ class FakeTaskRepository implements TaskRepository {
     required DateTime date,
   }) async {
     final List<Task> dayTasks = _tasks
-        .where((Task task) =>
-            task.userId == userId && _isSameDate(task.assignedDate, date))
+        .where(
+          (Task task) =>
+              task.userId == userId && _isSameDate(task.assignedDate, date),
+        )
         .toList(growable: false);
-    final List<Task> completed =
-        dayTasks.where((Task task) => task.completed).toList(growable: false);
+    final List<Task> completed = dayTasks
+        .where((Task task) => task.completed)
+        .toList(growable: false);
 
     return DailyPerformance(
       totalTasks: dayTasks.length,
       completedTasks: completed.length,
-      completionRate:
-          dayTasks.isEmpty ? 0 : (completed.length / dayTasks.length) * 100,
+      completionRate: dayTasks.isEmpty
+          ? 0
+          : (completed.length / dayTasks.length) * 100,
       totalPoints: dayTasks.fold<int>(0, (int sum, Task t) => sum + t.points),
       earnedPoints: completed.fold<int>(0, (int sum, Task t) => sum + t.points),
     );

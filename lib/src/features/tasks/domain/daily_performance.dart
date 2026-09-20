@@ -4,7 +4,7 @@ part 'daily_performance.freezed.dart';
 part 'daily_performance.g.dart';
 
 @freezed
-class DailyPerformance with _$DailyPerformance {
+abstract class DailyPerformance with _$DailyPerformance {
   const factory DailyPerformance({
     required int totalTasks,
     required int completedTasks,
