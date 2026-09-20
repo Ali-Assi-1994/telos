@@ -94,7 +94,8 @@ void main() {
         .read(taskMutationControllerProvider.notifier)
         .toggleCompleted(task);
 
-    final AsyncValue<void> state = container.read(taskMutationControllerProvider);
+    final AsyncValue<void> state =
+        container.read(taskMutationControllerProvider);
     expect(state.hasError, isTrue);
     expect(state.error, isA<DatabaseAppException>());
   });
