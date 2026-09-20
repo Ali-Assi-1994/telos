@@ -52,7 +52,9 @@ review, in priority order. Check items off as they're completed.
 - [ ] Replace (or clearly relabel) the fake "AI suggestions" in
       `create_task_sheet.dart` — currently `Random()`, not real AI. High risk
       given the JD's "AI-First Development" requirement.
-- [ ] Add a CI workflow (GitHub Actions: pub get, build_runner, analyze, test).
+- [x] Add a CI workflow (GitHub Actions: pub get, build_runner, analyze, test).
+      Done: `.github/workflows/ci.yml` runs get/build_runner/format_check/
+      analyze/test with coverage collection; branch protection requires it.
 - [ ] Optional: add an `AnalyticsService` stub / Sentry wiring for a couple of
       key events (JD mentions Sentry, Amplitude/Braze, "measure what you ship").
 - [ ] Minor: `Category.color` hex is fetched from Supabase but never rendered
