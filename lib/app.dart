@@ -10,37 +10,46 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    final ColorScheme calmColorScheme =
-        const ColorScheme(
-          brightness: Brightness.light,
-          primary: AppColors.calmPrimary,
-          onPrimary: AppColors.calmPrimaryForeground,
-          secondary: AppColors.calmSecondary,
-          onSecondary: AppColors.calmSecondaryForeground,
-          error: Color(0xFFB42318),
-          onError: Colors.white,
-          surface: AppColors.calmCard,
-          onSurface: AppColors.calmForeground,
-        ).copyWith(
-          onSurfaceVariant: AppColors.calmMutedForeground,
-          secondaryContainer: AppColors.calmSecondary,
-          onSecondaryContainer: AppColors.calmSecondaryForeground,
-          tertiary: AppColors.calmAccent,
-          tertiaryContainer: AppColors.calmAccent,
-          onTertiaryContainer: AppColors.calmAccentForeground,
-          outline: AppColors.calmBorder,
-          outlineVariant: AppColors.calmBorder,
-        );
 
     return MaterialApp.router(
       title: 'Telos',
       themeMode: ThemeMode.light,
-      theme: ThemeData(
-        colorScheme: calmColorScheme,
-        scaffoldBackgroundColor: AppColors.calmBackground,
-        useMaterial3: true,
-      ),
+      theme: appTheme,
       routerConfig: router,
     );
   }
+}
+
+/// The app's "calm mint" theme. Exposed as a top-level getter (rather than
+/// inlined in [App.build]) so golden tests can wrap widgets in the app's
+/// real theme instead of Flutter's default Material colors. All ThemeData
+/// config still lives in this file, per the project's theming rule.
+ThemeData get appTheme {
+  final ColorScheme calmColorScheme =
+      const ColorScheme(
+        brightness: Brightness.light,
+        primary: AppColors.calmPrimary,
+        onPrimary: AppColors.calmPrimaryForeground,
+        secondary: AppColors.calmSecondary,
+        onSecondary: AppColors.calmSecondaryForeground,
+        error: Color(0xFFB42318),
+        onError: Colors.white,
+        surface: AppColors.calmCard,
+        onSurface: AppColors.calmForeground,
+      ).copyWith(
+        onSurfaceVariant: AppColors.calmMutedForeground,
+        secondaryContainer: AppColors.calmSecondary,
+        onSecondaryContainer: AppColors.calmSecondaryForeground,
+        tertiary: AppColors.calmAccent,
+        tertiaryContainer: AppColors.calmAccent,
+        onTertiaryContainer: AppColors.calmAccentForeground,
+        outline: AppColors.calmBorder,
+        outlineVariant: AppColors.calmBorder,
+      );
+
+  return ThemeData(
+    colorScheme: calmColorScheme,
+    scaffoldBackgroundColor: AppColors.calmBackground,
+    useMaterial3: true,
+  );
 }

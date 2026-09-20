@@ -43,6 +43,39 @@ it, error states) without a device.
 make test
 ```
 
+## Golden tests (`test/golden/`)
+
+Pixel-comparison tests for 5 key widgets/screens: `LoginScreen`,
+`TasksScreen` (with a task loaded), `AppPrimaryButton`/`AppOutlineButton`,
+and the `TaskListLoadingSkeleton`/`TaskListErrorState` states.
+
+```bash
+make test
+```
+
+**Fonts are pinned, not left to whatever's on the machine.** By default
+Flutter's test framework renders text with "Ahem" (a placeholder font where
+every glyph is a black box) so that golden images don't depend on which
+fonts happen to be installed locally or in CI. `test/flutter_test_config.dart`
+overrides that: it loads the real Roboto and Material Icons fonts (bundled
+as test-only assets under `test/fonts/`, Apache-licensed, not part of the
+shipped app) so goldens actually show readable text and real icons instead
+of black boxes. This is safe to do without introducing cross-machine
+flakiness because golden rendering happens inside `flutter_tester`'s own
+engine, not the host OS; the pixels only depend on the Flutter SDK version,
+which is already pinned in CI.
+
+Golden PNGs live in `test/golden/goldens/`, next to the test file that
+produces them. To update one after an intentional design change:
+
+```bash
+make update_goldens
+```
+
+Review the resulting image diff before committing; an unreviewed golden
+update just teaches the test to accept whatever the code currently does; it
+is not proof the change was intentional.
+
 ## Integration tests (`integration_test/`)
 
 Full app flows (`App()`, real `GoRouter` navigation, real animations) run on
