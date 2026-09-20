@@ -18,6 +18,9 @@ macos/Pods/
 **/*.g.dart
 **/*.freezed.dart
 
+# Coverage
+coverage/
+
 # Environment / secrets (do not commit real keys)
 .env
 .env.dev
