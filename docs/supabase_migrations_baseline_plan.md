@@ -74,22 +74,28 @@ above.
 
 ### Step 1 — Confirm MCP access
 
-- [ ] Try `mcp__supabase__list_migrations` first (cheap, read-only). It was
+- [x] Try `mcp__supabase__list_migrations` first (cheap, read-only). It was
       `Unauthorized` in one session this project (no `SUPABASE_ACCESS_TOKEN`
       in that shell) but worked in another (the performance-feature session
       used `execute_sql`/`list_migrations` successfully) — so it may just
       work already. If unauthorized, the token needs to be set as an env var
       in the shell this session's MCP servers launch from, then the session
       restarted. Don't ask the user to paste the token into chat.
+      **Confirmed working** — returned `20260317184250_init_productivity_app_schema`
+      with no auth error. CLI fallback not needed.
 - [ ] If MCP genuinely can't be authenticated and CLI installation is
       preferred instead: `brew install supabase/tap/supabase`,
       `supabase login` (browser OAuth), `supabase link --project-ref gwvseuxuafjkygqcxeae`.
 
 ### Step 2 — Recover migration history
 
-- [ ] Run the `schema_migrations` query above via `execute_sql`.
-- [ ] For each row, write `supabase/migrations/<version>_<name>.sql` with
+- [x] Run the `schema_migrations` query above via `execute_sql`.
+      One row came back: `20260317184250_init_productivity_app_schema`.
+- [x] For each row, write `supabase/migrations/<version>_<name>.sql` with
       that row's `statements` content.
+      Written to [supabase/migrations/20260317184250_init_productivity_app_schema.sql](../supabase/migrations/20260317184250_init_productivity_app_schema.sql).
+      Content verified byte-accurate against the live DB via an MD5 hash of
+      the whitespace-normalized text, computed both server-side and locally.
 - [ ] If using the CLI as a fallback instead: `supabase db pull` generates
       `supabase/migrations/<timestamp>_remote_schema.sql` in one file. Less
       ideal (loses history granularity) but acceptable if Step 2's query
