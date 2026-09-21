@@ -138,11 +138,35 @@ above.
 
 ### Step 4 — RLS sanity check
 
-- [ ] `mcp__supabase__get_advisors(type: "security")` — one call, tells you
+- [x] `mcp__supabase__get_advisors(type: "security")` — one call, tells you
       whether RLS is actually enabled on the tables in use or if that
       section of `docs/database_schema.md` was ever really applied.
-- [ ] File anything it flags as a follow-up; fixing it is optional for this
+
+      **Result**: RLS is enabled on all 9 tables (confirmed independently
+      via `list_tables`, which reports `rls_enabled: true` for every one) —
+      the security section of `docs/database_schema.md` was genuinely
+      applied, not just aspirational.
+- [x] File anything it flags as a follow-up; fixing it is optional for this
       plan's scope, but don't skip running the check.
+
+      The advisor run surfaced one finding worth a dedicated follow-up
+      (spawned as its own task, not fixed in this PR — out of scope per
+      this plan's "capture what exists" mandate): 8 `SECURITY DEFINER`
+      functions — including the shipped `complete_task`, `uncomplete_task`,
+      `get_daily_performance`, `get_streak` — are executable by the `anon`
+      (unauthenticated) and `authenticated` roles via
+      `/rest/v1/rpc/<name>`, and none of their bodies check `auth.uid()`
+      against the caller-supplied `p_user_id`/`p_task_id`. In practice this
+      means any caller who can reach the REST API — authenticated or not —
+      can pass an arbitrary UUID and complete/uncomplete another user's
+      tasks or read another user's streak/performance data. This is a
+      pre-existing gap in the live schema, not something introduced by
+      this baselining work.
+
+      Two lower-severity findings, noted but not actioned: all 9 functions
+      have a mutable `search_path` (`function_search_path_mutable`, WARN),
+      and leaked-password protection is disabled for Auth
+      (`auth_leaked_password_protection`, WARN).
 
 ### Step 5 — Wrap up
 
