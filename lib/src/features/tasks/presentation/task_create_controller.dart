@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
+import 'package:telos/src/features/performance/presentation/performance_providers.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/domain/task_create_input.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_providers.dart';

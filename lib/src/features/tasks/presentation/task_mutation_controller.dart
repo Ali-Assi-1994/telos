@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
+import 'package:telos/src/features/performance/presentation/performance_providers.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_providers.dart';
@@ -41,6 +42,7 @@ class TaskMutationController extends _$TaskMutationController {
     if (!state.hasError) {
       ref.invalidate(tasksForSelectedDateProvider);
       ref.invalidate(dailyPerformanceForSelectedDateProvider);
+      ref.invalidate(streakProvider);
       AppLogger.tasks.info('Toggled completion for task ${task.id}');
     }
   }

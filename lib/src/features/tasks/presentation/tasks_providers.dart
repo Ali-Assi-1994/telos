@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/domain/category.dart';
-import 'package:telos/src/features/tasks/domain/daily_performance.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 
 part 'tasks_providers.g.dart';
@@ -45,23 +44,4 @@ Future<List<Task>> tasksForSelectedDate(Ref ref) async {
   return ref
       .read(taskRepositoryProvider)
       .getTasksForDate(userId: user.id, date: date);
-}
-
-@riverpod
-Future<DailyPerformance> dailyPerformanceForSelectedDate(Ref ref) async {
-  final DateTime date = ref.watch(selectedDateProvider);
-  final user = await ref.watch(authStateProvider.future);
-  if (user == null) {
-    return const DailyPerformance(
-      totalTasks: 0,
-      completedTasks: 0,
-      completionRate: 0,
-      totalPoints: 0,
-      earnedPoints: 0,
-    );
-  }
-
-  return ref
-      .read(taskRepositoryProvider)
-      .getDailyPerformance(userId: user.id, date: date);
 }
