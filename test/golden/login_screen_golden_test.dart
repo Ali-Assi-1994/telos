@@ -19,6 +19,9 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        // Match the app's retry: null (main.dart) so errors surface
+        // immediately instead of retrying with real timer delays.
+        retry: (int retryCount, Object error) => null,
         overrides: [
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
         ],

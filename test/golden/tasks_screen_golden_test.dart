@@ -13,10 +13,22 @@ import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
+import 'package:telos/src/features/tasks/presentation/tasks_providers.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_screen.dart';
 
 import '../features/auth/data/fakes/fake_auth_repository.dart';
 import '../features/tasks/data/fakes/fake_task_repository.dart';
+
+// TasksHeader renders the real month name and a week strip of actual
+// calendar day numbers for whatever selectedDateProvider resolves to. Left
+// at its default (DateTime.now()), the golden image would show today's
+// date and go stale the next day. Pinning it keeps the golden reproducible.
+final DateTime _fixedDate = DateTime(2026, 1, 15);
+
+class _FixedSelectedDate extends SelectedDate {
+  @override
+  DateTime build() => _fixedDate;
+}
 
 void main() {
   testWidgets('TasksScreen matches golden with a task loaded', (
@@ -29,27 +41,29 @@ void main() {
 
     const AppUser testUser = AppUser(id: 'user-1', email: 'user@example.com');
     final FakeTaskRepository taskRepository = FakeTaskRepository();
-    final DateTime today = DateTime.now();
-    final DateTime dateOnly = DateTime(today.year, today.month, today.day);
     taskRepository.seedTask(
       Task(
         id: 't1',
         userId: testUser.id,
         title: 'Write report',
         points: 20,
-        assignedDate: dateOnly,
-        createdAt: dateOnly,
-        updatedAt: dateOnly,
+        assignedDate: _fixedDate,
+        createdAt: _fixedDate,
+        updatedAt: _fixedDate,
       ),
     );
 
     await tester.pumpWidget(
       ProviderScope(
+        // Match the app's retry: null (main.dart) so errors surface
+        // immediately instead of retrying with real timer delays.
+        retry: (int retryCount, Object error) => null,
         overrides: [
           authRepositoryProvider.overrideWithValue(
             FakeAuthRepository(initialUser: testUser),
           ),
           taskRepositoryProvider.overrideWithValue(taskRepository),
+          selectedDateProvider.overrideWith(() => _FixedSelectedDate()),
         ],
         child: MaterialApp(theme: appTheme, home: const TasksScreen()),
       ),
