@@ -36,6 +36,9 @@ coverage/
 # Logs
 *.log
 
+# Local-only working notes (never pushed remote, see docs/EVIDENCE_GAP_REPORT.md history)
+docs/EVIDENCE_GAP_REPORT.md
+
 # macOS
 .DS_Store
 **/.DS_Store
