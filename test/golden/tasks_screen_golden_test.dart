@@ -11,12 +11,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:telos/app.dart';
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
+import 'package:telos/src/features/performance/data/supabase_performance_repository.dart';
+import 'package:telos/src/features/performance/domain/daily_performance.dart';
 import 'package:telos/src/features/tasks/data/supabase_task_repository.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_providers.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_screen.dart';
 
 import '../features/auth/data/fakes/fake_auth_repository.dart';
+import '../features/performance/data/fakes/fake_performance_repository.dart';
 import '../features/tasks/data/fakes/fake_task_repository.dart';
 
 // TasksHeader renders the real month name and a week strip of actual
@@ -63,6 +66,17 @@ void main() {
             FakeAuthRepository(initialUser: testUser),
           ),
           taskRepositoryProvider.overrideWithValue(taskRepository),
+          performanceRepositoryProvider.overrideWithValue(
+            FakePerformanceRepository(
+              dailyPerformance: const DailyPerformance(
+                totalTasks: 1,
+                completedTasks: 0,
+                completionRate: 0,
+                totalPoints: 20,
+                earnedPoints: 0,
+              ),
+            ),
+          ),
           selectedDateProvider.overrideWith(() => _FixedSelectedDate()),
         ],
         child: MaterialApp(theme: appTheme, home: const TasksScreen()),

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:telos/src/exceptions/app_exception.dart';
+import 'package:telos/src/features/performance/domain/streak.dart';
+import 'package:telos/src/features/performance/presentation/daily_progress_widget.dart';
+import 'package:telos/src/features/performance/presentation/performance_providers.dart';
 import 'package:telos/src/features/tasks/domain/category.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 import 'package:telos/src/features/tasks/presentation/task_create_controller.dart';
@@ -54,6 +57,14 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     );
     final int tasksCount = tasksState.value?.length ?? 0;
     final bool isViewingToday = _isSameDate(selectedDate, DateTime.now());
+    // 0 falls back to the plain task-count badge instead of showing a flame
+    // with "0" next to it, which would read like a broken-streak callout.
+    final int? currentStreak = ref.watch(
+      streakProvider.select((AsyncValue<Streak> s) => s.value?.currentStreak),
+    );
+    final int? streakCount = (currentStreak != null && currentStreak > 0)
+        ? currentStreak
+        : null;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -61,7 +72,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
             TasksHeader(
               selectedDate: selectedDate,
               isViewingToday: isViewingToday,
-              streakCount: null,
+              streakCount: streakCount,
               fallbackTasksCount: tasksCount,
               onDateSelected: (DateTime date) {
                 ref.read(selectedDateProvider.notifier).setDate(date);
@@ -73,6 +84,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                     .setDate(DateTime(now.year, now.month, now.day));
               },
             ),
+            const DailyProgressWidget(),
             Expanded(
               child: tasksState.when(
                 data: (List<Task> tasks) {
