@@ -827,7 +827,7 @@ Rules:
 - [x] Daily performance widget — `get_daily_performance` RPC
 
 ### Phase 3 — Motivation Layer (Week 5)
-- [ ] Streak display — `get_streak` RPC (Dart side done; RPC not yet deployed)
+- [x] Streak display — `get_streak` RPC
 - [ ] Points accumulation display
 - [ ] AI category suggestion — Edge Function + debounce
 - [ ] Recurring tasks — template creation, instance generation
