@@ -40,3 +40,7 @@ coverage/
 .DS_Store
 **/.DS_Store
 
+.claude/settings.local.json
+
+# Local-only working doc (see its own header note)
+docs/EVIDENCE_GAP_REPORT.md
