@@ -52,12 +52,19 @@ review, in priority order. Check items off as they're completed.
 - [x] Get the live schema under version control. Recovered from
       `supabase_migrations.schema_migrations` (the real applied SQL, not a
       `supabase db pull` snapshot) into `supabase/migrations/`.
-- [ ] Fix the anon-exploitable `SECURITY DEFINER` RPCs found by the security
-      advisor during that work: `complete_task`, `uncomplete_task`,
-      `get_daily_performance`, `get_streak`, `get_leaderboard`,
-      `lock_expired_tasks`, `handle_new_user`, `handle_group_created` are all
-      callable by `anon`/`authenticated` without checking `auth.uid()`
-      against the caller-supplied user id.
+- [x] Fix the anon-exploitable `SECURITY DEFINER` RPCs found by the security
+      advisor during that work. `complete_task`, `uncomplete_task`,
+      `get_daily_performance`, `get_streak` now reject the call unless
+      `auth.uid()` matches `p_user_id`; `get_leaderboard` now requires the
+      caller to be a member of `p_group_id`. `lock_expired_tasks`,
+      `handle_new_user`, `handle_group_created` are cron-/trigger-only, so
+      `EXECUTE` was revoked from `anon`/`authenticated`/`PUBLIC` outright.
+      See `supabase/migrations/20260921170059_restrict_security_definer_rpcs.sql`.
+      Note: the security advisor still flags the first five as
+      "SECURITY DEFINER executable by anon/authenticated" — that lint is
+      structural (ACL + `SECURITY DEFINER`) and can't see the internal
+      `auth.uid()` check, so it can't go fully quiet without breaking the
+      legitimate calls those RPCs exist to serve.
 - [ ] Minor: `generate_template_instances` is documented in
       `docs/database_schema.md` and cron-scheduled, but was never actually
       deployed — its nightly cron job has been failing since at least
