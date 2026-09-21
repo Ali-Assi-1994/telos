@@ -1,0 +1,170 @@
+# Testing strategy
+
+What's tested at each layer, how Riverpod overrides make it possible without
+a real backend, and how to run each kind of test.
+
+## Unit tests (`test/features/*/data/`)
+
+Repository and DTO logic tested directly, with no Riverpod involved. See
+`test/features/tasks/data/task_dto_test.dart` and
+`supabase_task_repository_test.dart`.
+
+```bash
+make test
+```
+
+## Controller tests (`test/features/*/presentation/*_controller_test.dart`)
+
+Controllers (`AsyncNotifier` subclasses) tested against a `ProviderContainer`
+with the repository provider overridden by a fake
+(`FakeAuthRepository`/`FakeTaskRepository` in `test/features/*/data/fakes/`).
+No widget tree, no network.
+
+A gotcha worth knowing: autoDispose controllers need an active listener to
+survive across `await` gaps in Riverpod 3.x, matching what a real widget's
+`ref.watch`/`ref.listen` would provide. Tests that call
+`container.read(someControllerProvider.notifier).someMethod()` without first
+calling `container.listen(someControllerProvider, (_, _) {})` can see the
+controller torn down mid-mutation. See the `setUp` blocks in
+`task_create_controller_test.dart` and `task_mutation_controller_test.dart`
+for the pattern.
+
+```bash
+make test
+```
+
+## Widget tests (`test/features/*/presentation/*_screen_test.dart`)
+
+Full screens pumped inside a `ProviderScope` with fake repositories,
+verifying real widget behavior (form validation, tapping a task to complete
+it, error states) without a device.
+
+```bash
+make test
+```
+
+## Golden tests (`test/golden/`)
+
+Pixel-comparison tests for 5 key widgets/screens: `LoginScreen`,
+`TasksScreen` (with a task loaded), `AppPrimaryButton`/`AppOutlineButton`,
+and the `TaskListLoadingSkeleton`/`TaskListErrorState` states.
+
+```bash
+make test
+```
+
+**Fonts are pinned, not left to whatever's on the machine.** By default
+Flutter's test framework renders text with "Ahem" (a placeholder font where
+every glyph is a black box) so that golden images don't depend on which
+fonts happen to be installed locally or in CI. `test/flutter_test_config.dart`
+overrides that: it loads the real Roboto and Material Icons fonts (bundled
+as test-only assets under `test/fonts/`, Apache-licensed, not part of the
+shipped app) so goldens actually show readable text and real icons instead
+of black boxes.
+
+**This alone is not enough for cross-platform CI stability.** Golden
+rendering happens inside `flutter_tester`'s own engine rather than the host
+OS, which keeps it deterministic on one machine, but goldens generated on
+macOS still showed small pixel diffs (0.2% to 1.3%) when checked against the
+exact same widgets rendered in CI on Ubuntu, on the same Flutter SDK version
+and the same embedded fonts; subpixel antialiasing differs by host
+OS/GPU driver even then. `flutter_test_config.dart` also installs a
+small-tolerance `GoldenFileComparator` (2%, comfortably above the diffs
+actually observed) following the pattern documented directly in
+`package:flutter_test`'s own source. A real visual regression, a color,
+layout, or content change, produces a much larger diff than this and still
+fails the test.
+
+Golden PNGs live in `test/golden/goldens/`, next to the test file that
+produces them. To update one after an intentional design change:
+
+```bash
+make update_goldens
+```
+
+Review the resulting image diff before committing; an unreviewed golden
+update just teaches the test to accept whatever the code currently does; it
+is not proof the change was intentional.
+
+## Integration tests (`integration_test/`)
+
+Full app flows (`App()`, real `GoRouter` navigation, real animations) run on
+a real simulator or emulator, still backed by fake repositories via
+`ProviderScope` overrides rather than a live Supabase backend. Written with
+[Patrol](https://patrol.leancode.co), chosen over plain `integration_test`
+for native automation capability the app will need later (permission
+dialogs, notifications), and because demonstrating Patrol experience is part
+of the point of this repo.
+
+**Version pinning matters.** `patrol_cli` must be a version compatible with
+the `patrol` package pinned in `pubspec.yaml` (currently `4.10.0`); they are
+not interchangeable across versions, and installing "whatever's latest" for
+one half can silently produce a test run that builds successfully but
+discovers zero tests. `patrol_cli`'s own `patrol test` command usually
+detects this and tells you the exact fix. Check the
+[compatibility table](https://patrol.leancode.co/documentation/compatibility-table)
+before bumping either one. As of this writing, `patrol` `4.10.0` pairs with
+`patrol_cli` `4.8.0`:
+
+```bash
+dart pub global activate patrol_cli 4.8.0
+```
+
+**Known quirk with this pairing:** on iOS, `patrol_cli 4.8.0`'s pretty
+"Test summary" block can report `Total: 0` even when every test actually
+passed. Confirmed by checking the raw output with `--verbose`, which showed
+`Test case '...' passed` from the underlying XCTest run despite the summary
+saying zero. Android reports correctly with the same versions. If an iOS run
+shows zero tests, don't assume failure; check the verbose output or the
+`.xcresult` bundle before troubleshooting further.
+
+Run all integration tests on a booted iOS Simulator or Android
+emulator/device:
+
+```bash
+patrol test -d "<device name, e.g. iPhone 16e, or emulator-5554>"
+```
+
+Or a single file:
+
+```bash
+patrol test --target integration_test/sign_in_flow_test.dart -d "<device>"
+```
+
+### Native setup this required
+
+Both platforms needed a one-time native bridge in addition to the
+`patrol`/`patrol_cli` install, since Patrol's Dart tests run inside a native
+instrumentation test:
+
+- **iOS**: a `RunnerUITests` XCUITest target (`ios/RunnerUITests/
+  RunnerUITests.m`), added to the `Runner` scheme's `TestAction`, linked
+  against the `FlutterGeneratedPluginSwiftPackage` Swift package (the same
+  one `Runner` itself uses, since Patrol's native code ships as a Flutter
+  plugin, and Swift Package dependencies aren't inherited across Xcode
+  targets the way CocoaPods ones are), and added to `ios/Podfile` as
+  `target 'RunnerUITests' do inherit! :complete end`.
+- **Android**: `android/app/src/androidTest/java/com/example/telos/
+  MainActivityTest.java`, `testInstrumentationRunner =
+  "pl.leancode.patrol.PatrolJUnitRunner"` and the AndroidX Test Orchestrator
+  (`testOptions.execution`, `androidTestUtil("androidx.test:orchestrator")`)
+  in `android/app/build.gradle.kts`.
+
+### AI-assisted test development (Patrol MCP)
+
+`patrol_mcp` is configured in `.mcp.json`, giving an AI coding agent direct
+tools to run a test file, list attached devices, capture a screenshot, and
+read the native UI tree during an active session, without shelling out
+manually the way this setup was originally verified. Requires a session
+restart to connect after being added to `.mcp.json`. Its bundled
+`patrol_cli` dependency is what drove the `patrol_cli 4.8.0` /
+`patrol 4.10.0` pairing above; `patrol_mcp` and the standalone `patrol_cli`
+install need to agree.
+
+### Not yet done
+
+These integration tests only run locally today; they are not wired into CI
+(`.github/workflows/ci.yml` runs `analyze`/`test`, neither of which touches
+`integration_test/`). Running them in CI needs a macOS runner for iOS and an
+emulator action (e.g. `reactivecircus/android-emulator-runner`) for Android;
+tracked as follow-up work, not done here.

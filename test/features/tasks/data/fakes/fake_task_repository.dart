@@ -1,7 +1,6 @@
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/tasks/data/task_repository.dart';
 import 'package:telos/src/features/tasks/domain/category.dart';
-import 'package:telos/src/features/tasks/domain/daily_performance.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 import 'package:telos/src/features/tasks/domain/task_create_input.dart';
 
@@ -113,32 +112,6 @@ class FakeTaskRepository implements TaskRepository {
       throw const DatabaseAppException('Task is locked.');
     }
     _replaceTask(task.copyWith(completed: false, completedAt: null));
-  }
-
-  @override
-  Future<DailyPerformance> getDailyPerformance({
-    required String userId,
-    required DateTime date,
-  }) async {
-    final List<Task> dayTasks = _tasks
-        .where(
-          (Task task) =>
-              task.userId == userId && _isSameDate(task.assignedDate, date),
-        )
-        .toList(growable: false);
-    final List<Task> completed = dayTasks
-        .where((Task task) => task.completed)
-        .toList(growable: false);
-
-    return DailyPerformance(
-      totalTasks: dayTasks.length,
-      completedTasks: completed.length,
-      completionRate: dayTasks.isEmpty
-          ? 0
-          : (completed.length / dayTasks.length) * 100,
-      totalPoints: dayTasks.fold<int>(0, (int sum, Task t) => sum + t.points),
-      earnedPoints: completed.fold<int>(0, (int sum, Task t) => sum + t.points),
-    );
   }
 
   Task _findTask(String taskId) {

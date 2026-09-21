@@ -824,10 +824,10 @@ Rules:
 - [ ] Task completion — `complete_task` RPC
 - [ ] Task un-completion — `uncomplete_task` RPC
 - [ ] Task locking — read `is_locked` from DB, disable actions
-- [ ] Daily performance widget — `get_daily_performance` RPC
+- [x] Daily performance widget — `get_daily_performance` RPC
 
 ### Phase 3 — Motivation Layer (Week 5)
-- [ ] Streak display — `get_streak` RPC
+- [ ] Streak display — `get_streak` RPC (Dart side done; RPC not yet deployed)
 - [ ] Points accumulation display
 - [ ] AI category suggestion — Edge Function + debounce
 - [ ] Recurring tasks — template creation, instance generation

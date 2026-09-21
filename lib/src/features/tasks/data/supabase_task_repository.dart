@@ -7,7 +7,6 @@ import 'package:telos/src/utils/logger.dart';
 import 'package:telos/src/features/tasks/data/task_dto.dart';
 import 'package:telos/src/features/tasks/data/task_repository.dart';
 import 'package:telos/src/features/tasks/domain/category.dart';
-import 'package:telos/src/features/tasks/domain/daily_performance.dart';
 import 'package:telos/src/features/tasks/domain/task.dart';
 import 'package:telos/src/features/tasks/domain/task_create_input.dart';
 
@@ -165,48 +164,6 @@ task_categories(
       userId: userId,
       failureFallback: 'Could not update this task right now.',
     );
-  }
-
-  @override
-  Future<DailyPerformance> getDailyPerformance({
-    required String userId,
-    required DateTime date,
-  }) async {
-    try {
-      final dynamic response = await _client.rpc<dynamic>(
-        'get_daily_performance',
-        params: <String, dynamic>{
-          'p_user_id': userId,
-          'p_date': _dateOnly(date),
-        },
-      );
-
-      if (response is List<dynamic> && response.isNotEmpty) {
-        return DailyPerformanceDto(
-          response.first as Map<String, dynamic>,
-        ).toDomain();
-      }
-      if (response is Map<String, dynamic>) {
-        return DailyPerformanceDto(response).toDomain();
-      }
-      return const DailyPerformance(
-        totalTasks: 0,
-        completedTasks: 0,
-        completionRate: 0,
-        totalPoints: 0,
-        earnedPoints: 0,
-      );
-    } on PostgrestException catch (e, st) {
-      AppLogger.tasks.error(
-        'Failed to load daily performance',
-        error: e,
-        stackTrace: st,
-      );
-      throw DatabaseAppException(
-        'Could not load today\'s progress right now. Please try again.',
-        cause: e,
-      );
-    }
   }
 
   Future<void> _runCompletionRpc({
