@@ -47,6 +47,23 @@ review, in priority order. Check items off as they're completed.
       (matching `home_screen.dart`'s existing one) flagging them as
       placeholders needing real data/domain layers before being built out.
 
+## Carried over from the Supabase migrations baseline plan
+
+- [x] Get the live schema under version control. Recovered from
+      `supabase_migrations.schema_migrations` (the real applied SQL, not a
+      `supabase db pull` snapshot) into `supabase/migrations/`.
+- [ ] Fix the anon-exploitable `SECURITY DEFINER` RPCs found by the security
+      advisor during that work: `complete_task`, `uncomplete_task`,
+      `get_daily_performance`, `get_streak`, `get_leaderboard`,
+      `lock_expired_tasks`, `handle_new_user`, `handle_group_created` are all
+      callable by `anon`/`authenticated` without checking `auth.uid()`
+      against the caller-supplied user id.
+- [ ] Minor: `generate_template_instances` is documented in
+      `docs/database_schema.md` and cron-scheduled, but was never actually
+      deployed — its nightly cron job has been failing since at least
+      2026-09-17. No app consumer uses `task_templates` yet, so this is
+      inert; fix if/when that feature gets built.
+
 ## Carried over from the earlier code review
 
 - [ ] Replace (or clearly relabel) the fake "AI suggestions" in
