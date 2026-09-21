@@ -3,6 +3,15 @@
 # Stack: Supabase (Postgres)
 # @-mention this file when writing repositories, DTOs, RPCs, or migrations
 
+> **Source of truth**: [`supabase/migrations/`](../supabase/migrations/) now
+> holds the actual applied SQL, recovered directly from the live project's
+> `supabase_migrations.schema_migrations` table. This file remains a
+> readable reference, but where the two disagree, the migration wins.
+> Verified match as of 2026-09-21: all 9 tables, indexes, triggers, RLS
+> policies, `complete_task`, `uncomplete_task`, `get_daily_performance`,
+> `get_streak`, `get_leaderboard`, and `lock_expired_tasks` are deployed
+> exactly as documented below. One divergence — see §6 and §7.
+
 ---
 
 ## Table of Contents
@@ -733,6 +742,13 @@ $$;
 
 ### `generate_template_instances(p_template_id, p_from_date, p_to_date)`
 
+> **⚠ Drift, confirmed 2026-09-21: this function is documented and scheduled
+> (see §7) but was never actually deployed** — it does not exist in
+> `supabase_migrations.schema_migrations` or in the live database's
+> `pg_proc`. The nightly cron job that calls it has been failing every run.
+> No app code calls `task_templates` yet, so this has no user-facing impact.
+> Left as-is per this repo's baseline-what's-real scope; not fixed here.
+
 Generates task instances for a template within a date range.
 Idempotent — safe to call multiple times due to `ON CONFLICT DO NOTHING`.
 Returns the number of new instances inserted.
@@ -794,6 +810,10 @@ $$;
 ---
 
 ## 7. Scheduled Jobs
+
+> `generate-recurring-instances` is currently failing on every run
+> (`function generate_template_instances(uuid, date, date) does not exist`)
+> — see the drift note in §6. `lock-expired-tasks` runs successfully.
 
 ```sql
 -- Lock expired tasks — runs daily at 00:00 UTC

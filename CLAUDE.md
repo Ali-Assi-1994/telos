@@ -195,7 +195,7 @@ need it.
 Use `flutter_dotenv` for environment-specific config. Never hardcode keys.
 
 ```
-.env.dev      # local Supabase instance
+.env.dev      # hosted Supabase Cloud project used for local development
 .env.staging  # shared test environment
 .env.prod     # production
 ```
