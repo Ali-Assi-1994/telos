@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: get build_runner_build build_runner_watch test analyze format format_check integration_test
+.PHONY: get build_runner_build build_runner_watch test analyze format format_check integration_test update_goldens
 
 get:
 	@if [ ! -f .env.dev ]; then \
@@ -28,8 +28,14 @@ format_check:
 	dart format --output none --set-exit-if-changed .
 
 # Runs all integration_test/ flows with Patrol on a booted simulator/emulator
-# or connected device. Requires patrol_cli 4.6.1 (see docs/testing-strategy.md).
+# or connected device. Requires patrol_cli 4.8.0 (see docs/testing-strategy.md).
 # Usage: make integration_test DEVICE="iPhone 16e"
 integration_test:
 	patrol test -d "$(DEVICE)"
+
+# Regenerates test/golden/goldens/*.png after an intentional design change.
+# Review the diffs before committing; an unreviewed golden update defeats
+# the point of the test.
+update_goldens:
+	flutter test --update-goldens test/golden/
 
