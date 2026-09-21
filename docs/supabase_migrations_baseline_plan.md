@@ -103,7 +103,7 @@ above.
 
 ### Step 3 — Reconcile against the docs
 
-- [ ] Diff the recovered schema against `docs/database_schema.md`. Expect
+- [x] Diff the recovered schema against `docs/database_schema.md`. Expect
       `profiles`, `categories`, `tasks`, `task_categories`, `get_daily_performance`,
       `get_streak`, `complete_task`, `uncomplete_task` to match. Note (don't
       "fix") any drift for `task_templates`, `groups`, `group_members`,
@@ -111,7 +111,28 @@ above.
       `generate_template_instances` — whatever their actual state turns out
       to be, leave it as-is; those have no app consumer yet (see Out of
       Scope).
-- [ ] Update `docs/database_schema.md` to point at `supabase/migrations/` as
+
+      **Result**: all 9 tables, all indexes, all triggers, all RLS
+      policies, and 6 of 7 documented RPCs (`complete_task`,
+      `uncomplete_task`, `get_daily_performance`, `get_streak`,
+      `get_leaderboard`, `lock_expired_tasks`) match the doc exactly —
+      confirmed live via `list_tables` and a `pg_proc` query.
+
+      One real divergence, confirmed via `list_migrations`/`pg_proc`/
+      `cron.job_run_details`: `generate_template_instances` is fully
+      documented in §6 and scheduled in §7's cron job, but was **never
+      actually created** on the live project — it's absent from both the
+      recovered migration and `pg_proc`. The `generate-recurring-instances`
+      cron job has been failing every night since at least 2026-09-17 with
+      `function generate_template_instances(uuid, date, date) does not
+      exist`. No app consumer uses `task_templates` yet, so this is inert —
+      left as-is per scope, noted in `docs/database_schema.md` §6/§7.
+
+      Also found (untracked, harmless): a `public.update_updated_at_column`
+      function exists live but isn't referenced by any trigger and isn't in
+      the migration or docs — dead code from an earlier iteration, not
+      touched.
+- [x] Update `docs/database_schema.md` to point at `supabase/migrations/` as
       the source of truth rather than standalone prose, or at least note
       where they diverge.
 
