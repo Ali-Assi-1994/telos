@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:telos/src/exceptions/app_exception.dart';
@@ -117,14 +119,27 @@ class SupabaseGroupRepository implements GroupRepository {
     }
 
     try {
+      // Two requests on purpose: chaining .select() onto this insert would
+      // add a RETURNING clause, which Postgres gates through
+      // groups_select_member. That policy's visibility depends on
+      // handle_group_created's AFTER INSERT trigger having added this user
+      // to group_members -- a write this same statement's snapshot can't
+      // see yet, so RETURNING would appear to violate RLS (42501) even
+      // though the insert itself is allowed. Re-reading by the invite code
+      // we generated (unique, so unambiguous) in a fresh request sidesteps
+      // this: by then the trigger's write has committed.
+      final String inviteCode = _generateInviteCode();
+      await _client.from('groups').insert(<String, dynamic>{
+        'name': trimmedName,
+        'description': description?.trim(),
+        'invite_code': inviteCode,
+        'created_by': userId,
+      });
+
       final Map<String, dynamic> inserted = await _client
           .from('groups')
-          .insert(<String, dynamic>{
-            'name': trimmedName,
-            'description': description?.trim(),
-            'created_by': userId,
-          })
           .select(_groupColumns)
+          .eq('invite_code', inviteCode)
           .single();
 
       final Group group = GroupDto(inserted).toDomain();
@@ -216,5 +231,15 @@ class SupabaseGroupRepository implements GroupRepository {
         cause: e,
       );
     }
+  }
+
+  static const String _inviteCodeChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+  String _generateInviteCode() {
+    final Random random = Random.secure();
+    return List<String>.generate(
+      6,
+      (_) => _inviteCodeChars[random.nextInt(_inviteCodeChars.length)],
+    ).join();
   }
 }
