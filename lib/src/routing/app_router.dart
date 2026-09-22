@@ -3,20 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
+import 'package:telos/src/common_widgets/main_bottom_nav_bar.dart';
 import 'package:telos/src/features/auth/data/auth_repository.dart';
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/auth/presentation/login_screen.dart';
 import 'package:telos/src/features/auth/presentation/register_screen.dart';
+import 'package:telos/src/features/groups/presentation/group_detail_screen.dart';
+import 'package:telos/src/features/groups/presentation/groups_screen.dart';
 import 'package:telos/src/features/home/presentation/home_screen.dart';
-import 'package:telos/src/common_widgets/main_bottom_nav_bar.dart';
 import 'package:telos/src/features/profile/presentation/profile_screen.dart';
 import 'package:telos/src/features/tasks/presentation/tasks_screen.dart';
 import 'package:telos/src/features/timer/presentation/timer_screen.dart';
-import 'package:telos/src/utils/logger.dart';
 import 'package:telos/src/routing/app_routes.dart';
 import 'package:telos/src/routing/auth_guard.dart';
+import 'package:telos/src/utils/logger.dart';
 
 part 'app_router.g.dart';
 
@@ -62,6 +63,17 @@ GoRouter appRouter(Ref ref) {
         path: AppRoutes.register,
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.groups,
+        name: 'groups',
+        builder: (context, state) => const GroupsScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.groupDetail}/:groupId',
+        name: 'groupDetail',
+        builder: (context, state) =>
+            GroupDetailScreen(groupId: state.pathParameters['groupId']!),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
