@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/groups/domain/group.dart';
 import 'package:telos/src/features/groups/presentation/groups_controller.dart';
@@ -104,16 +103,17 @@ class _GroupsScreenState extends ConsumerState<GroupsScreen> {
             );
             return CreateGroupSheet(
               isLoading: isLoading,
-              onCreate: ({required String name, required String? description}) async {
-                final Group? created = await ref
-                    .read(groupsControllerProvider.notifier)
-                    .createGroup(name: name, description: description);
-                if (!sheetContext.mounted) return;
-                if (created != null) {
-                  Navigator.of(sheetContext).pop();
-                  _openGroupDetail(created.id);
-                }
-              },
+              onCreate:
+                  ({required String name, required String? description}) async {
+                    final Group? created = await ref
+                        .read(groupsControllerProvider.notifier)
+                        .createGroup(name: name, description: description);
+                    if (!sheetContext.mounted) return;
+                    if (created != null) {
+                      Navigator.of(sheetContext).pop();
+                      _openGroupDetail(created.id);
+                    }
+                  },
             );
           },
         );
@@ -183,11 +183,7 @@ class _EmptyGroupsState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(
-              Icons.groups_rounded,
-              size: 56,
-              color: colorScheme.primary,
-            ),
+            Icon(Icons.groups_rounded, size: 56, color: colorScheme.primary),
             const SizedBox(height: 16),
             const Text(
               'No groups yet. Create one or join with an invite code!',

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
@@ -51,26 +50,27 @@ void main() {
       expect(created!.name, 'Morning Runners');
       expect(groupRepository.groups, hasLength(1));
 
-      final List<GroupMember> members = groupRepository
-          .membersByGroupId[created.id]!;
+      final List<GroupMember> members =
+          groupRepository.membersByGroupId[created.id]!;
       expect(members.single.userId, testUser.id);
       expect(members.single.role, GroupRole.admin);
     });
 
-    test('repository failure surfaces as an AppException and returns null', () async {
-      groupRepository.throwOnCreateGroup = true;
+    test(
+      'repository failure surfaces as an AppException and returns null',
+      () async {
+        groupRepository.throwOnCreateGroup = true;
 
-      final Group? created = await container
-          .read(groupsControllerProvider.notifier)
-          .createGroup(name: 'Morning Runners');
+        final Group? created = await container
+            .read(groupsControllerProvider.notifier)
+            .createGroup(name: 'Morning Runners');
 
-      expect(created, isNull);
-      final AsyncValue<void> state = container.read(
-        groupsControllerProvider,
-      );
-      expect(state.hasError, isTrue);
-      expect(state.error, isA<DatabaseAppException>());
-    });
+        expect(created, isNull);
+        final AsyncValue<void> state = container.read(groupsControllerProvider);
+        expect(state.hasError, isTrue);
+        expect(state.error, isA<DatabaseAppException>());
+      },
+    );
   });
 
   group('joinGroupByCode', () {
@@ -100,45 +100,47 @@ void main() {
           .joinGroupByCode('NOPE99');
 
       expect(joined, isNull);
-      final AsyncValue<void> state = container.read(
-        groupsControllerProvider,
-      );
+      final AsyncValue<void> state = container.read(groupsControllerProvider);
       expect(state.hasError, isTrue);
       expect(state.error, isA<DatabaseAppException>());
     });
   });
 
   group('leaveGroup', () {
-    test('removes the signed-in user from the group and returns true', () async {
-      final Group group = await groupRepository.createGroup(
-        name: 'Morning Runners',
-        userId: testUser.id,
-      );
+    test(
+      'removes the signed-in user from the group and returns true',
+      () async {
+        final Group group = await groupRepository.createGroup(
+          name: 'Morning Runners',
+          userId: testUser.id,
+        );
 
-      final bool result = await container
-          .read(groupsControllerProvider.notifier)
-          .leaveGroup(group.id);
+        final bool result = await container
+            .read(groupsControllerProvider.notifier)
+            .leaveGroup(group.id);
 
-      expect(result, isTrue);
-      expect(groupRepository.membersByGroupId[group.id], isEmpty);
-    });
+        expect(result, isTrue);
+        expect(groupRepository.membersByGroupId[group.id], isEmpty);
+      },
+    );
 
-    test('repository failure surfaces as an AppException and returns false', () async {
-      final Group group = await groupRepository.createGroup(
-        name: 'Morning Runners',
-        userId: testUser.id,
-      );
-      groupRepository.throwOnLeaveGroup = true;
+    test(
+      'repository failure surfaces as an AppException and returns false',
+      () async {
+        final Group group = await groupRepository.createGroup(
+          name: 'Morning Runners',
+          userId: testUser.id,
+        );
+        groupRepository.throwOnLeaveGroup = true;
 
-      final bool result = await container
-          .read(groupsControllerProvider.notifier)
-          .leaveGroup(group.id);
+        final bool result = await container
+            .read(groupsControllerProvider.notifier)
+            .leaveGroup(group.id);
 
-      expect(result, isFalse);
-      final AsyncValue<void> state = container.read(
-        groupsControllerProvider,
-      );
-      expect(state.hasError, isTrue);
-    });
+        expect(result, isFalse);
+        final AsyncValue<void> state = container.read(groupsControllerProvider);
+        expect(state.hasError, isTrue);
+      },
+    );
   });
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:telos/src/features/groups/domain/group.dart';
 
 class GroupCard extends StatelessWidget {
@@ -48,7 +47,8 @@ class GroupCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    if (description != null && description.isNotEmpty) ...<Widget>[
+                    if (description != null &&
+                        description.isNotEmpty) ...<Widget>[
                       const SizedBox(height: 2),
                       Text(
                         description,

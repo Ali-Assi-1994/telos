@@ -32,8 +32,9 @@ class FakeGroupRepository implements GroupRepository {
     }
     return groups
         .where(
-          (Group group) => (membersByGroupId[group.id] ?? const [])
-              .any((GroupMember m) => m.userId == userId),
+          (Group group) => (membersByGroupId[group.id] ?? const []).any(
+            (GroupMember m) => m.userId == userId,
+          ),
         )
         .toList(growable: false);
   }

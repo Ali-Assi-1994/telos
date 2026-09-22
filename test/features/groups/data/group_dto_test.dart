@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:telos/src/features/groups/data/group_dto.dart';
 import 'package:telos/src/features/groups/domain/group.dart';
 import 'package:telos/src/features/groups/domain/group_member.dart';

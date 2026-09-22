@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/groups/domain/group.dart';
 import 'package:telos/src/features/groups/domain/group_member.dart';
@@ -44,8 +43,11 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       ),
       body: SafeArea(
         child: groupState.when(
-          data: (Group group) =>
-              _GroupDetailBody(group: group, isLeaving: isMutating, onLeave: _confirmLeave),
+          data: (Group group) => _GroupDetailBody(
+            group: group,
+            isLeaving: isMutating,
+            onLeave: _confirmLeave,
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (Object error, StackTrace _) => Center(
             child: Padding(
@@ -126,8 +128,12 @@ class _GroupDetailBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: <Widget>[
-        if (group.description != null && group.description!.isNotEmpty) ...<Widget>[
-          Text(group.description!, style: Theme.of(context).textTheme.bodyMedium),
+        if (group.description != null &&
+            group.description!.isNotEmpty) ...<Widget>[
+          Text(
+            group.description!,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: 16),
         ],
         _InviteCodeCard(inviteCode: group.inviteCode),
@@ -145,11 +151,10 @@ class _GroupDetailBody extends ConsumerWidget {
                 .map((GroupMember member) => _MemberTile(member: member))
                 .toList(growable: false),
           ),
-          loading: () =>
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          ),
           error: (Object error, StackTrace _) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(

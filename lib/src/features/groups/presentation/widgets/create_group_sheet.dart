@@ -22,8 +22,7 @@ class CreateGroupSheet extends StatefulWidget {
 class _CreateGroupSheetState extends State<CreateGroupSheet> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController =
-      TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   @override
   void dispose() {
@@ -87,7 +86,9 @@ class _CreateGroupSheetState extends State<CreateGroupSheet> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: Text(widget.isLoading ? 'Creating...' : 'Create group'),
+                  child: Text(
+                    widget.isLoading ? 'Creating...' : 'Create group',
+                  ),
                 ),
               ],
             ),

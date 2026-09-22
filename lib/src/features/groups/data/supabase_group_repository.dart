@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/groups/data/group_dto.dart';
 import 'package:telos/src/features/groups/data/group_repository.dart';
@@ -132,7 +131,11 @@ class SupabaseGroupRepository implements GroupRepository {
       AppLogger.groups.info('Created group: ${group.id}');
       return group;
     } on PostgrestException catch (e, st) {
-      AppLogger.groups.error('Failed to create group', error: e, stackTrace: st);
+      AppLogger.groups.error(
+        'Failed to create group',
+        error: e,
+        stackTrace: st,
+      );
       throw DatabaseAppException(
         'Could not create group right now. Please try again.',
         cause: e,

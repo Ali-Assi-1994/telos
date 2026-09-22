@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:telos/src/exceptions/app_exception.dart';
 import 'package:telos/src/features/auth/presentation/auth_controller.dart';
 import 'package:telos/src/routing/app_routes.dart';

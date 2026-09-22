@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
@@ -64,9 +63,7 @@ void main() {
       );
       groupRepository.seedGroup(buildGroup('2'));
 
-      final List<Group> result = await container.read(
-        myGroupsProvider.future,
-      );
+      final List<Group> result = await container.read(myGroupsProvider.future);
 
       expect(result.map((Group g) => g.id), ['1']);
     });
@@ -74,9 +71,7 @@ void main() {
     test('returns an empty list when signed out', () async {
       await authRepository.signOut();
 
-      final List<Group> result = await container.read(
-        myGroupsProvider.future,
-      );
+      final List<Group> result = await container.read(myGroupsProvider.future);
 
       expect(result, isEmpty);
     });

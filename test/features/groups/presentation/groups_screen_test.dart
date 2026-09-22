@@ -7,7 +7,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:telos/src/features/auth/data/supabase_auth_repository.dart';
 import 'package:telos/src/features/auth/domain/app_user.dart';
 import 'package:telos/src/features/groups/data/supabase_group_repository.dart';
@@ -48,9 +47,7 @@ void main() {
     );
   });
 
-  testWidgets('shows a group the user belongs to', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('shows a group the user belongs to', (WidgetTester tester) async {
     final FakeGroupRepository groupRepository = FakeGroupRepository();
     final DateTime now = DateTime(2026, 1, 15);
     final Group group = Group(

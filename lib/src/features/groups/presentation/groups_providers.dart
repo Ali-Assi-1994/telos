@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import 'package:telos/src/features/auth/presentation/auth_state_provider.dart';
 import 'package:telos/src/features/groups/data/supabase_group_repository.dart';
 import 'package:telos/src/features/groups/domain/group.dart';
