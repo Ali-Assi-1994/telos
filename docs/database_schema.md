@@ -484,15 +484,32 @@ CREATE POLICY "ttc_insert"           ON task_template_categories FOR INSERT
 CREATE POLICY "ttc_delete"           ON task_template_categories FOR DELETE
   USING (template_id IN (SELECT id FROM task_templates WHERE user_id = auth.uid()));
 
+-- is_group_member: SECURITY DEFINER helper used by the SELECT policies
+-- below. A plain "group_id IN (SELECT group_id FROM group_members WHERE
+-- user_id = auth.uid())" subquery inside group_members' own SELECT policy
+-- causes "infinite recursion detected in policy for relation group_members"
+-- (Postgres 42P17): the subquery is itself subject to group_members' RLS,
+-- which re-applies the same policy, forever. Wrapping the check in a
+-- SECURITY DEFINER function breaks the cycle because the function body
+-- runs as its owner, which isn't subject to group_members' RLS (no FORCE
+-- ROW LEVEL SECURITY is set). Fixed in
+-- 20260922095506_fix_group_members_rls_recursion.sql.
+CREATE OR REPLACE FUNCTION is_group_member(p_group_id UUID, p_user_id UUID)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM group_members WHERE group_id = p_group_id AND user_id = p_user_id
+  );
+$$;
+
 -- groups: visible to members only
 CREATE POLICY "groups_select_member" ON groups FOR SELECT
-  USING (id IN (SELECT group_id FROM group_members WHERE user_id = auth.uid()));
+  USING (is_group_member(id, auth.uid()));
 CREATE POLICY "groups_insert_auth"   ON groups FOR INSERT
   WITH CHECK (auth.uid() = created_by);
 
 -- group_members: visible to members of the same group
 CREATE POLICY "gm_select_member"     ON group_members FOR SELECT
-  USING (group_id IN (SELECT group_id FROM group_members WHERE user_id = auth.uid()));
+  USING (is_group_member(group_id, auth.uid()));
 CREATE POLICY "gm_insert_self"       ON group_members FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "gm_delete_self"       ON group_members FOR DELETE
